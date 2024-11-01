@@ -2,8 +2,8 @@
 
 Authors: Giulio Caflisch, David Loeffler
 -/
-import MyProject.Fwddiff
-import MyProject.Help
+import Mahler.Fwddiff
+import Mahler.Help
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 

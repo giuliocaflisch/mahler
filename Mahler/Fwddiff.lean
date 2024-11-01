@@ -13,7 +13,7 @@ commutative monoid with one and `G` is a commutative group. The forward differen
 of such a function `f` at a point `x` is given by an element `f' : G`.
 -/
 
-variable {G S : Type*} [AddCommMonoidWithOne M] [AddCommGroup G] [Semiring S] [Module S G]
+variable {G S M : Type*} [AddCommMonoidWithOne M] [AddCommGroup G] [Semiring S] [Module S G]
 variable {R : Type*} [Ring R]
 variable {F : Type*} [Field F]
 
@@ -66,7 +66,7 @@ def fwddiff (f : M → G) : M → G :=
   repeat rw [sub_mul]
   abel
 
-@[simp] theorem fwddiff_div (f g : M → F) (hx : g x ≠ 0) (hx' : g (x + 1) ≠ 0) :
+@[simp] theorem fwddiff_div (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + 1) ≠ 0) :
     fwddiff/-_[s]-/ (f / g) x = ((fwddiff f * g - f * fwddiff g) / (g * (g + /-s • -/ fwddiff g))) x := by
   simp only [Pi.div_apply, Pi.sub_apply, Pi.mul_apply, Pi.add_apply]
   repeat rw [fwddiff]
