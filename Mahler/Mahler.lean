@@ -12,7 +12,7 @@ theorem Padic.special (f : C(ℤ_[p], ℚ_[p])):
   have hf : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (b a: ℤ_[p]), ‖a - b‖ ≤ p^(-(t : ℤ)) → ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
     apply Padic.uniformContinuous_then_nonzero_norm_le_pow
     exact CompactSpace.uniformContinuous_of_continuous f.continuous
-  have hf' : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (x : ℤ_[p]),  ‖f (x + (p : ℤ_[p])^t) - f x‖ ≤  p^(-(s : ℤ)) := by
+  have hf' : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (x : ℤ_[p]),  ‖f (x + (p : ℤ_[p])^t) - f x‖ ≤ p^(-(s : ℤ)) := by
     intro s
     specialize hf s
     obtain ⟨t, ⟨ht', ht⟩⟩ := hf
