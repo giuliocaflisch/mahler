@@ -193,7 +193,7 @@ theorem Padic.tendsto_atTop_norm_lt_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
   · intros Hε m
     specialize Hε ((p : ℝ)^(-(m : ℤ)))
     apply Hε
-    apply zpow_pos_of_pos
+    apply zpow_pos
     exact Nat.cast_pos.mpr hp.out.pos
   · intros Hm ε hε
     obtain ⟨n, hn⟩ := by
@@ -235,7 +235,7 @@ theorem Padic.continuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
     specialize Hε b ((p : ℝ)^(-(s : ℤ)))
     obtain ⟨δ, hδ, Hδ⟩ := by
       apply Hε
-      apply zpow_pos_of_pos
+      apply zpow_pos
       exact Nat.cast_pos.mpr hp.out.pos
     obtain ⟨t, ht⟩ := by
       exact PadicInt.exists_pow_neg_lt p hδ
@@ -254,7 +254,7 @@ theorem Padic.continuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
       exact Hs
     use (p : ℝ)^(-(t : ℤ))
     constructor
-    · apply zpow_pos_of_pos
+    · apply zpow_pos
       exact Nat.cast_pos.mpr hp.out.pos
     · intros a ha
       apply lt_of_lt_of_le _ (le_of_lt hs)
@@ -306,7 +306,7 @@ theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
     specialize Hε ((p : ℝ)^(-(s : ℤ)))
     obtain ⟨δ, hδ, Hδ⟩ := by
       apply Hε
-      apply zpow_pos_of_pos
+      apply zpow_pos
       exact Nat.cast_pos.mpr hp.out.pos
     obtain ⟨t, ht⟩ := PadicInt.exists_pow_neg_lt p hδ
     use t
@@ -321,7 +321,7 @@ theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
     obtain ⟨t, ht⟩ := Hs
     use ((p : ℝ)^(-(t : ℤ)))
     constructor
-    · apply zpow_pos_of_pos
+    · apply zpow_pos
       exact Nat.cast_pos.mpr hp.out.pos
     · intro a b ha
       apply lt_of_lt_of_le _ (le_of_lt hs)
