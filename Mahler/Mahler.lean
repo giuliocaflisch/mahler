@@ -275,7 +275,7 @@ theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
               calc
                 _ ≤ (p: ℝ)^(-s : ℤ) := H
                 _ ≤ _ := by
-                  apply zpow_le_of_le
+                  apply zpow_le_zpow_right₀
                   · simp only [Nat.one_le_cast]
                     exact hp.out.one_le
                   · apply Int.neg_le_neg
