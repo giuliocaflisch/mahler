@@ -32,7 +32,7 @@ concurrency:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: write  # Read access to repository contents
+  contents: read  # Read access to repository contents
   pages: write    # Write access to GitHub Pages
   id-token: write # Write access to ID tokens
 
@@ -96,6 +96,7 @@ jobs:
             cp blueprint/print/print.pdf home_page/blueprint.pdf
             leanblueprint web
             cp -r blueprint/web home_page/blueprint
+            chmod -R 755 home_page # Ensure permissions for home_page directory
 
       - name: Check declarations mentioned in the blueprint exist in Lean code
         run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
