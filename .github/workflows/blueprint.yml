@@ -96,10 +96,12 @@ jobs:
             cp blueprint/print/print.pdf home_page/blueprint.pdf
             leanblueprint web
             cp -r blueprint/web home_page/blueprint
-            chmod -R 755 home_page # Ensure permissions for home_page directory
 
       - name: Check declarations mentioned in the blueprint exist in Lean code
         run: ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+
+      - name: Ensure permissions for home_page directory before documentation copy
+        run: chmod -R 755 home_page
 
       - name: Copy API documentation to `home_page/docs`
         run: cp -r .lake/build/doc home_page/docs
