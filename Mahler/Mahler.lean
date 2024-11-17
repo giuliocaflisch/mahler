@@ -7,6 +7,7 @@ Authors: Giulio Caflisch, David Loeffler
 -/
 import Mahler.Fwddiff
 import Mahler.Help
+import Mathlib.NumberTheory.Padics.ProperSpace
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 

@@ -2,7 +2,11 @@
 
 Authors: Giulio Caflisch, David Loeffler
 -/
-import Mathlib
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Data.Int.Star
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.NumberTheory.Padics.PadicIntegers
+import Mathlib.Topology.ContinuousMap.Compact
 
 --------------------------------------------------------------------------------------------------------------------------------
 

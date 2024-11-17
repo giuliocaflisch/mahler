@@ -4,7 +4,8 @@ Dummy message for github commit
 Authors: Giulio Caflisch, David Loeffler
 -/
 
-import Mathlib
+import Mathlib.Analysis.Normed.Group.Ultra
+import Mathlib.Topology.ContinuousMap.Compact
 
 /-!
 # One dimensional forward difference operator
