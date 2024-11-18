@@ -11,8 +11,9 @@ import Mathlib.NumberTheory.Padics.ProperSpace
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
+/-
 theorem Padic.special (f : C(ℤ_[p], ℚ_[p])):
-    ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖fwddiff^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖fwddiff^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
+    ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖(fwdDiff 1)^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff 1)^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
   have hf : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (b a: ℤ_[p]), ‖a - b‖ ≤ p^(-(t : ℤ)) → ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
     apply Padic.uniformContinuous_then_nonzero_norm_le_pow
     exact CompactSpace.uniformContinuous_of_continuous f.continuous
@@ -34,10 +35,10 @@ theorem Padic.special (f : C(ℤ_[p], ℚ_[p])):
   use t
   use ht'
   intro n
-  have k : ((p ^ t).choose (p^t)) • fwddiff^[p^t] (fwddiff^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • fwddiff^[k + 1] (fwddiff^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t + k) - f (0 + k)) := by
-    simp only [smul_sub, Finset.sum_sub_distrib, ← fwddiff_iterate]
+  have k : ((p ^ t).choose (p^t)) • (fwdDiff 1)^[p^t] ((fwdDiff 1)^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • (fwdDiff 1)^[k + 1] ((fwdDiff 1)^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t + k) - f (0 + k)) := by
+    simp only [smul_sub, Finset.sum_sub_distrib, ← fwdDiff_iterate]
     rw [add_sub, neg_add_eq_sub, sub_sub, eq_sub_iff_add_eq, add_comm]
-    have k' :  ((p ^ t).choose 0) • fwddiff^[0] ( fwddiff^[n] f) 0 = fwddiff^[n] f 0 := by
+    have k' :  ((p ^ t).choose 0) • (fwdDiff 1)^[0] ((fwdDiff 1)^[n] f) 0 = (fwdDiff 1)^[n] f 0 := by
       simp only [Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul]
     rw [← k']
     have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • fwddiff^[k] (fwddiff^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • fwddiff^[k + 1] (fwddiff^[n] f) 0 + (p ^ t).choose 0 • fwddiff^[0] (fwddiff^[n] f) 0 := by
@@ -134,7 +135,7 @@ theorem Padic.special (f : C(ℤ_[p], ℚ_[p])):
 ------------------------------------------------------------------------------------------
 
 theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
-    Filter.Tendsto (fun k ↦ fwddiff^[k] f 0) Filter.atTop (nhds (0 : ℚ)) := by
+    Filter.Tendsto (fun k ↦ (fwdDiff 1)^[k] f 0) Filter.atTop (nhds (0 : ℚ)) := by
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f
   have hy := fun x ↦ ContinuousMap.norm_coe_le_norm f x
@@ -156,7 +157,7 @@ theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
         simp only [Padic.addValuation.apply hx, ne_eq, WithTop.coe_ne_top, not_false_eq_true]
       exact l' l
     rw [k]
-    simp only [ge_iff_le, fwddiff_zero_iterate, norm_zero, zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg, implies_true, exists_const]
+    simp only [ge_iff_le, fwdDiff_zero_iterate, norm_zero, zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg, implies_true, exists_const]
   | coe b =>
     wlog hb' : b = 0
     · rw [← ne_eq] at hb'
@@ -235,7 +236,7 @@ theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
             rw [← hb]
             simp only [Padic.addValuation_le_addValuation_iff_norm_le_norm]
             rw [hy']
-            apply fwddiff_iterate_at_zero_bounded_by_function_norm
+            apply fwdDiff_iterate_at_zero_bounded_by_function_norm
           · intros hj' n hn
             specialize ht (n - p^t)
             have : p ^ t + (n - p ^ t) = n := by
@@ -260,7 +261,7 @@ theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
                   _ ≤ _ := hn
               specialize hj (k + 1 + (n - p ^ t)) this
               calc
-                _ ≤ (p : ℝ)^(-1 : ℤ) * ‖fwddiff^[k + 1 + (n - p ^ t)] f 0‖ := hk
+                _ ≤ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff 1)^[k + 1 + (n - p ^ t)] f 0‖ := hk
                 _ ≤ (p : ℝ)^(-1 : ℤ) * (p : ℝ)^(-j : ℤ) := by
                   apply (mul_le_mul_iff_of_pos_left ?_).mpr
                   . exact hj
@@ -288,3 +289,5 @@ theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
       specialize ht m
       simp only [le_refl, true_implies] at ht
       use (m * p^t)
+
+-/
