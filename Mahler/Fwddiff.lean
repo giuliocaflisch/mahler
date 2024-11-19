@@ -15,7 +15,7 @@ def fwdDiff (h : M) (f : M -> G) : M -> G :=
   fun x => f (x + h) - f x
 
 def discDeriv (h : H) (f : H -> F) : H -> F :=
-  fun x => fwdDiff h f x / h
+  fun x => (fwdDiff h f x) / h
 
 @[simp] theorem fwdDiff_const (h : M) (k : G) :
     fwdDiff h (fun (_ : M) => k) = (fun (_ : M) => (0 : G)) := by

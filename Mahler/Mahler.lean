@@ -139,7 +139,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
 
 ------------------------------------------------------------------------------------------
 
-theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
+theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
     Filter.Tendsto (fun k => (fwdDiff h)^[k] f 0) Filter.atTop (nhds (0 : ℚ)) := by
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f
