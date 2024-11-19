@@ -241,7 +241,7 @@ theorem Padic.fwddiff_iterate_at_zero_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
             rw [← hb]
             simp only [Padic.addValuation_le_addValuation_iff_norm_le_norm]
             rw [hy']
-            apply fwdDiff_iterate_at_zero_bounded_by_function_norm
+            apply fwdDiff_iter_bounded_by_function_norm
           · intros hj' n hn
             specialize ht (n - p^t)
             have : p ^ t + (n - p ^ t) = n := by

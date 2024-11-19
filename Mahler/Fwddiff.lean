@@ -158,7 +158,7 @@ theorem fwdDiff_iter_eq_sum_shift (h : M) (n : ℕ) (f : M -> G) (x : M) :
     rw [this, add_smul, one_smul]
     simp_rw [add_comm]
 
-theorem fwdDiff_iterate_at_zero_bounded_by_function_norm {X Y : Type*} [AddCommMonoidWithOne X] [TopologicalSpace X] [CompactSpace X] [NormedAddCommGroup Y] [IsUltrametricDist Y]
+theorem fwdDiff_iter_bounded_by_function_norm {X Y : Type*} [AddCommMonoidWithOne X] [TopologicalSpace X] [CompactSpace X] [NormedAddCommGroup Y] [IsUltrametricDist Y]
     (h : X) (f : C(X, Y)) (x : X) (n : ℕ) : ‖(fwdDiff h)^[n] f x‖ ≤ ‖f‖ := by
   rw [fwdDiff_iter_eq_sum_shift]
   apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty
