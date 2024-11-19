@@ -1,7 +1,4 @@
 /-
-Message for testing sharing changes
-
-A second message added by DL
 
 Authors: Giulio Caflisch, David Loeffler
 -/
