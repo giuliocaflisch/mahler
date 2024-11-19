@@ -9,8 +9,8 @@ import Mathlib.NumberTheory.Padics.ProperSpace
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
 theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
-    ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖(fwdDiff h)^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ => (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff h)^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
-  have hf : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (b a: ℤ_[p]), ‖a - b‖ ≤ p^(-(t : ℤ)) -> ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
+    ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖(fwdDiff h)^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff h)^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
+  have hf : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (b a: ℤ_[p]), ‖a - b‖ ≤ p^(-(t : ℤ)) → ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
     apply Padic.uniformContinuous_then_nonzero_norm_le_pow
     exact CompactSpace.uniformContinuous_of_continuous f.continuous
   have hf' : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (x : ℤ_[p]),  ‖f (x • h + (p : ℤ_[p])^t • h) - f (x • h)‖ ≤ p^(-(s : ℤ)) := by
@@ -140,7 +140,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
 ------------------------------------------------------------------------------------------
 
 theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
-    Filter.Tendsto (fun k => (fwdDiff h)^[k] f 0) Filter.atTop (nhds (0 : ℚ)) := by
+    Filter.Tendsto (fun k ↦ (fwdDiff h)^[k] f 0) Filter.atTop (nhds (0 : ℚ)) := by
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f
   have hy := fun x ↦ ContinuousMap.norm_coe_le_norm f x
@@ -148,7 +148,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
 
   cases hb : Padic.addValuation (f y) with
   | top =>
-    have k : f = (fun (_ : ℤ_[p]) => (0 : ℚ_[p])) := by
+    have k : f = (fun (_ : ℤ_[p]) ↦ (0 : ℚ_[p])) := by
       by_contra k
       have k' : ∃ x : ℤ_[p], f x ≠ 0 := by
         contrapose! k
