@@ -7,12 +7,16 @@ Authors: Giulio Caflisch, David Loeffler
 import Mathlib.Analysis.Normed.Group.Ultra
 import Mathlib.Topology.ContinuousMap.Compact
 
-variable {G S M : Type*} [AddCommMonoidWithOne M] [AddCommGroup G] [Semiring S] [Module S G]
+variable {G S M : Type*} [AddCommMonoid M] [AddCommGroup G] [Semiring S] [Module S G]
 variable {R : Type*} [Ring R]
 variable {F : Type*} [Field F]
+variable {H : AddSubmonoid F}
 
 def fwdDiff (h : M) (f : M -> G) : M -> G :=
   fun x => f (x + h) - f x
+
+def discDeriv (h : H) (f : H -> F) : H -> F :=
+  fun x => fwdDiff h f x / h
 
 @[simp] theorem fwdDiff_const (h : M) (k : G) :
     fwdDiff h (fun (_ : M) => k) = (fun (_ : M) => (0 : G)) := by
@@ -116,7 +120,7 @@ theorem shift_eq_sum_fwdDiff_iter (h : M) (f : M -> G) (n : ℕ) (y : M):
 
 ---------------------------------------------------------------------
 
-@[simp] theorem fwdDiff_iterate_const_smul (h : M) (n : ℕ) (f : M -> G) (r : S) :
+@[simp] theorem fwdDiff_iter_const_smul (h : M) (n : ℕ) (f : M -> G) (r : S) :
     (fwdDiff h)^[n] (r • f) = r • (fwdDiff h)^[n] f := by
   revert f
   induction' n with n hn
@@ -126,7 +130,7 @@ theorem shift_eq_sum_fwdDiff_iter (h : M) (f : M -> G) (n : ℕ) (y : M):
     specialize hn (fwdDiff h f)
     exact hn
 
-theorem fwdDiff_iterate (h : M) (n : ℕ) (f : M -> G) (x : M) :
+theorem fwdDiff_iter_eq_sum_shift (h : M) (n : ℕ) (f : M -> G) (x : M) :
     (fwdDiff h)^[n] f x = ∑ k ∈ Finset.range (n + 1), ( (-(1 : ℤ))^(n - k) * (n.choose k) ) • f (x + k • h) := by
   revert x
   induction' n with n hn
@@ -157,7 +161,7 @@ theorem fwdDiff_iterate (h : M) (n : ℕ) (f : M -> G) (x : M) :
 
 theorem fwdDiff_iterate_at_zero_bounded_by_function_norm {X Y : Type*} [AddCommMonoidWithOne X] [TopologicalSpace X] [CompactSpace X] [NormedAddCommGroup Y] [IsUltrametricDist Y]
     (h : X) (f : C(X, Y)) (x : X) (n : ℕ) : ‖(fwdDiff h)^[n] f x‖ ≤ ‖f‖ := by
-  rw [fwdDiff_iterate]
+  rw [fwdDiff_iter_eq_sum_shift]
   apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty
   · simp only [Finset.nonempty_range_iff, ne_eq, AddLeftCancelMonoid.add_eq_zero, one_ne_zero, and_false, not_false_eq_true]
   · intro i _
