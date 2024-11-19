@@ -9,7 +9,7 @@ import Mathlib.Topology.ContinuousMap.Compact
 variable {G S M : Type*} [AddCommMonoid M] [AddCommGroup G] [Semiring S] [Module S G]
 variable {R : Type*} [Ring R]
 variable {F : Type*} [Field F]
-variable {H : AddSubmonoid F}
+variable {H : Subring F}
 
 def fwdDiff (h : M) (f : M -> G) : M -> G :=
   fun x => f (x + h) - f x
