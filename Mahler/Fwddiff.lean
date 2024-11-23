@@ -5,7 +5,8 @@ Authors: Giulio Caflisch, David Loeffler
 import Mathlib.Analysis.Normed.Group.Ultra
 import Mathlib.Topology.ContinuousMap.Compact
 
-variable {G S M : Type*} [AddCommMonoid M] [AddCommGroup G] [Semiring S] [Module S G]
+variable {G M : Type*} [AddCommMonoid M] [AddCommGroup G]
+variable {S : Type*} [Semiring S] [Module S G]
 variable {R : Type*} [Ring R] [Module R G]
 variable {F : Type*} [Field F]
 
@@ -21,26 +22,19 @@ def fwdDiff (h : M) (f : M → G) : M → G :=
 @[simp] theorem fwdDiff_add (h : M) (f g : M → G) :
     fwdDiff h (f + g) = fwdDiff h f + fwdDiff h g := by
   ext x
-  simp_rw [Pi.add_apply]
-  repeat rw [fwdDiff]
-  simp_rw [Pi.add_apply]
+  simp_rw [Pi.add_apply, fwdDiff, Pi.add_apply]
   abel
 
 @[simp] theorem fwdDiff_sub (h : M) (f g : M → G) :
     fwdDiff h (f - g) = fwdDiff h f - fwdDiff h g := by
   ext x
-  simp_rw [Pi.sub_apply]
-  repeat rw [fwdDiff]
-  simp_rw [Pi.sub_apply]
+  simp_rw [Pi.sub_apply, fwdDiff, Pi.sub_apply]
   abel
 
 @[simp] theorem fwdDiff_const_smul (h : M) (f : M → G) (r : S) :
     fwdDiff h (r • f) = r • fwdDiff h f := by
   ext x
-  simp_rw [Pi.smul_apply]
-  repeat rw [fwdDiff]
-  simp_rw [Pi.smul_apply]
-  rw [smul_sub]
+  simp_rw [Pi.smul_apply, fwdDiff, Pi.smul_apply, smul_sub]
 
 @[simp] lemma fwdDiff_finset_sum (h : M) {α : Type*} (s : Finset α) (f : α → M → G) :
     fwdDiff h (∑ k ∈ s, f k) = ∑ k ∈ s, fwdDiff h (f k) := by
@@ -50,9 +44,7 @@ def fwdDiff (h : M) (f : M → G) : M → G :=
 @[simp] theorem fwdDiff_smul (h : M) (f : M → R) (g : M → G):
     fwdDiff h (f • g) = fwdDiff h f • g + f • fwdDiff h g + fwdDiff h f • fwdDiff h g := by
   ext x
-  simp only [Pi.add_apply, Pi.smul_apply']
-  repeat rw [fwdDiff]
-  simp_rw  [Pi.smul_apply', smul_sub, sub_smul]
+  simp only [Pi.add_apply, Pi.smul_apply', fwdDiff, smul_sub, sub_smul]
   abel
 
 @[simp] theorem fwdDiff_div (h : M) (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + h) ≠ 0) :
