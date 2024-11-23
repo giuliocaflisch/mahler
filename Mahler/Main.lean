@@ -2,11 +2,28 @@
 
 Authors: Giulio Caflisch, David Loeffler
 -/
-import Mahler.Fwddiff
-import Mahler.Help
+import Mahler.ForwardDiff
+import Mahler.ForwardFinitesimalDeriv
+import Mahler.help
 import Mathlib.NumberTheory.Padics.ProperSpace
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
+
+private theorem Padic.bojanic (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) (t : ℕ):
+      ((p ^ t).choose (p^t)) • (fwdDiff h)^[p^t] ((fwdDiff h)^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • (fwdDiff h)^[k + 1] ((fwdDiff h)^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t • h + k • h) - f (0 + k • h)) := by
+    simp only [smul_sub, Finset.sum_sub_distrib, ← fwdDiff_iter_eq_sum_shift]
+    rw [add_sub, neg_add_eq_sub, sub_sub, eq_sub_iff_add_eq, add_comm]
+    have k' : ((p ^ t).choose 0) • (fwdDiff h)^[0] ((fwdDiff h)^[n] f) = (fwdDiff h)^[n] f := by
+      simp only [Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul]
+    nth_rewrite 2 [← k']
+    have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • (fwdDiff h)^[k] ((fwdDiff h)^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • (fwdDiff h)^[k + 1] ((fwdDiff h)^[n] f) 0 + ((p ^ t).choose 0 • (fwdDiff h)^[0] ((fwdDiff h)^[n] f)) 0 := by
+      have k'' : Nat.succ (Nat.pred (p^t)) = p^t := by
+        apply Nat.succ_pred_eq_of_pos
+        exact Nat.pow_pos hp.out.pos
+      rw [← k'', Finset.sum_range_succ']
+      simp only [Nat.pred_eq_sub_one, Nat.succ_eq_add_one, Function.iterate_succ, Function.comp_apply, nsmul_eq_mul, Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul, add_tsub_cancel_right]
+    rw [← k', ← Finset.sum_range_succ, ← shift_eq_sum_fwdDiff_iter]
+    simp only [nsmul_eq_mul, Nat.cast_pow, zero_add]
 
 theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
     ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖(fwdDiff h)^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff h)^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
@@ -39,21 +56,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
   use ht'
   intro n
 
-  have k : ((p ^ t).choose (p^t)) • (fwdDiff h)^[p^t] ((fwdDiff h)^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • (fwdDiff h)^[k + 1] ((fwdDiff h)^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t • h + k • h) - f (0 + k • h)) := by
-    simp only [smul_sub, Finset.sum_sub_distrib, ← fwdDiff_iter_eq_sum_shift]
-    rw [add_sub, neg_add_eq_sub, sub_sub, eq_sub_iff_add_eq, add_comm]
-    have k' : ((p ^ t).choose 0) • (fwdDiff h)^[0] ((fwdDiff h)^[n] f) = (fwdDiff h)^[n] f := by
-      simp only [Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul]
-    nth_rewrite 2 [← k']
-    have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • (fwdDiff h)^[k] ((fwdDiff h)^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • (fwdDiff h)^[k + 1] ((fwdDiff h)^[n] f) 0 + ((p ^ t).choose 0 • (fwdDiff h)^[0] ((fwdDiff h)^[n] f)) 0 := by
-      have k'' : Nat.succ (Nat.pred (p^t)) = p^t := by
-        apply Nat.succ_pred_eq_of_pos
-        exact Nat.pow_pos hp.out.pos
-      rw [← k'', Finset.sum_range_succ']
-      simp only [Nat.pred_eq_sub_one, Nat.succ_eq_add_one, Function.iterate_succ, Function.comp_apply, nsmul_eq_mul, Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul, add_tsub_cancel_right]
-
-    rw [← k', ← Finset.sum_range_succ, ← shift_eq_sum_fwdDiff_iter]
-    simp only [nsmul_eq_mul, Nat.cast_pow, zero_add]
+  have k := Padic.bojanic h f n t
   simp only [Nat.choose_self, one_smul, zero_add, ← Function.iterate_add_apply] at k
   rw [← Finset.sum_neg_distrib] at k
 
