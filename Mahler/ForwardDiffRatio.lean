@@ -2,6 +2,10 @@
 
 Authors: Giulio Caflisch, David Loeffler
 -/
+
+/- For generalization -/
+
+/-
 import Mahler.ForwardDiff
 
 universe u
@@ -18,3 +22,4 @@ noncomputable def fwdDiffRatio (h : R) (f : R → F) : R → F :=
   · ext x
     simp_rw [Function.iterate_succ_apply']
     simp_rw [hn, fwdDiffRatio, fwdDiff, pow_succ, sub_div, div_div]
+-/

@@ -3,7 +3,6 @@
 Authors: Giulio Caflisch, David Loeffler
 -/
 import Mahler.ForwardDiff
-import Mahler.ForwardDiffRatio
 import Mahler.Help
 import Mathlib.NumberTheory.Padics.ProperSpace
 import Mathlib.Analysis.NormedSpace.FunctionSeries
@@ -303,8 +302,8 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
-    f n = ∑' k : ℕ, (fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval (n : ℤ_[p]) := by
-  simp_rw [fwdDiffRatio_iter_fwdDiff, PadicInt.algebraMap_apply, PadicInt.coe_one, one_pow, div_one, descPochhammer_eval_eq_descFactorial, PadicInt.coe_natCast, div_mul_comm]
+    f n = ∑' k : ℕ, (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval (n : ℤ_[p]) := by
+  simp_rw [descPochhammer_eval_eq_descFactorial, PadicInt.coe_natCast, div_mul_comm]
   have (n : ℕ) :
       n = ((n : ℚ) : ℚ_[p]) := by
     simp only [Rat.cast_natCast]
@@ -365,23 +364,24 @@ theorem PadicInt.norm_ascPochhammer_le (k : ℕ) (x : ℤ_[p]) :
 theorem PadicInt.norm_descPochhammer_le (k : ℕ) (x : ℤ_[p]) :
     ‖(descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
   sorry
+-/
 
 theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
-    f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, (fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
+    f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast
   · exact ContinuousMap.continuous f
-  · have term_continuous : ∀ k : ℕ, Continuous fun x ↦ (fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
+  · have term_continuous : ∀ k : ℕ, Continuous fun x ↦ (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
       intro k
       apply Continuous.mul
       · exact continuous_const
       · apply Continuous.subtype_val
         apply Polynomial.continuous
 
-    have term_bound_summable : Summable fun k : ℕ ↦ ‖(fwdDiffRatio 1)^[k] f 0‖ := by
+    have term_bound_summable : Summable fun k : ℕ ↦ ‖(fwdDiff 1)^[k] f 0‖ := by
       sorry
 
-    have term_bound : ∀ k : ℕ, ∀ x : ℤ_[p], ‖(fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(fwdDiffRatio 1)^[k] f 0‖ := by
-      simp_rw [fwdDiffRatio_iter_fwdDiff, PadicInt.algebraMap_apply, PadicInt.coe_one, one_pow, div_one, padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
+    have term_bound : ∀ k : ℕ, ∀ x : ℤ_[p], ‖(fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(fwdDiff 1)^[k] f 0‖ := by
+      simp_rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
       intros k x
       apply mul_le_of_le_one_left
       · simp only [norm_nonneg]
@@ -399,5 +399,3 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
 
 theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
   exact IsUltrametricDist.nonarchimedeanAddGroup
-
--/
