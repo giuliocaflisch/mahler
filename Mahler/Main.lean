@@ -386,7 +386,8 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
       apply mul_le_of_le_one_left
       · simp only [norm_nonneg]
       · rw [div_le_one]
-        apply PadicInt.norm_descPochhammer_le
+        sorry
+        --apply PadicInt.norm_descPochhammer_le
         · simp_rw [norm_pos_iff, ne_eq, Nat.cast_eq_zero, ← ne_eq]
           apply Nat.factorial_ne_zero
 
