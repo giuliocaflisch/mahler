@@ -370,8 +370,7 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
     f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast
   · exact ContinuousMap.continuous f
-  · sorry
-    /-
+  · /-
     have term_continuous : ∀ k : ℕ, Continuous fun x ↦ (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
       intro k
       apply Continuous.mul
@@ -395,9 +394,13 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
 
     apply continuous_tsum term_continuous term_bound_summable term_bound
     -/
+    sorry
   · ext n
     simp only [Function.comp_apply]
     rw [natural_mahler]
+
+-- NonarchimedeanAddGroup.cauchySeq_sum_of_tendsto_cofinite_zero
+--
 
 theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
   exact IsUltrametricDist.nonarchimedeanAddGroup
