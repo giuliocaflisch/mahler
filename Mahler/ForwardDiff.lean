@@ -19,6 +19,11 @@ def fwdDiff (h : M) (f : M → G) : M → G :=
   rw [fwdDiff]
   abel
 
+@[simp] theorem fwdDiff_id (h : G) :
+    fwdDiff h id = (fun _ ↦ h) := by
+  ext x
+  simp_rw [fwdDiff, id_eq, add_sub_cancel_left]
+
 @[simp] theorem fwdDiff_add (h : M) (f g : M → G) :
     fwdDiff h (f + g) = fwdDiff h f + fwdDiff h g := by
   ext x
@@ -143,14 +148,14 @@ theorem fwdDiff_iter_eq_sum_shift (h : M) (n : ℕ) (f : M → G) (x : M) :
     rw [this, add_smul, one_smul]
     simp_rw [add_comm]
 
-theorem fwdDiff_iter_bounded_by_function_norm {X Y : Type*} [AddCommMonoidWithOne X] [TopologicalSpace X] [CompactSpace X] [NormedAddCommGroup Y] [IsUltrametricDist Y]
-    (h : X) (f : C(X, Y)) (x : X) (n : ℕ) : ‖(fwdDiff h)^[n] f x‖ ≤ ‖f‖ := by
+theorem IsUltrametricDist.norm_fwdDiff_iter_apply_le {M G : Type*} [TopologicalSpace M] [CompactSpace M] [AddCommMonoid M] [SeminormedAddCommGroup G] [IsUltrametricDist G]
+    (h : M) (f : C(M, G)) (m : M) (n : ℕ) : ‖(fwdDiff h)^[n] f m‖ ≤ ‖f‖ := by
   rw [fwdDiff_iter_eq_sum_shift]
   apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty
   · simp only [Finset.nonempty_range_iff, ne_eq, AddLeftCancelMonoid.add_eq_zero, one_ne_zero, and_false, not_false_eq_true]
   · intro i _
     calc
-      _ ≤ ‖f (x + i • h)‖ := by
+      _ ≤ ‖f (m + i • h)‖ := by
         apply IsUltrametricDist.norm_zsmul_le
       _ ≤ _ := by
-        exact ContinuousMap.norm_coe_le_norm f (x + i • h)
+        exact ContinuousMap.norm_coe_le_norm f (m + i • h)

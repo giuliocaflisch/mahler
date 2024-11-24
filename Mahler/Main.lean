@@ -3,9 +3,11 @@
 Authors: Giulio Caflisch, David Loeffler
 -/
 import Mahler.ForwardDiff
-import Mahler.ForwardFinitesimalDeriv
-import Mahler.help
+import Mahler.ForwardDiffRatio
+import Mahler.Help
 import Mathlib.NumberTheory.Padics.ProperSpace
+import Mathlib.Analysis.NormedSpace.FunctionSeries
+import Mathlib.Topology.Algebra.Polynomial
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
@@ -143,7 +145,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
 ------------------------------------------------------------------------------------------
 
 theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
-    Filter.Tendsto (fun k ↦ (fwdDiff h)^[k] f 0) Filter.atTop (nhds (0 : ℚ)) := by
+    Filter.Tendsto (fun k ↦ (fwdDiff h)^[k] f 0) Filter.atTop (nhds 0) := by
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f
   have hy := fun x ↦ ContinuousMap.norm_coe_le_norm f x
@@ -244,7 +246,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
             rw [← hb]
             simp only [Padic.addValuation_le_addValuation_iff_norm_le_norm]
             rw [hy']
-            apply fwdDiff_iter_bounded_by_function_norm
+            apply IsUltrametricDist.norm_fwdDiff_iter_apply_le
           · intros hj' n hn
             specialize ht (n - p^t)
             have : p ^ t + (n - p ^ t) = n := by
@@ -297,3 +299,104 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
       specialize ht m
       simp only [le_refl, true_implies] at ht
       use (m * p^t)
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
+    f n = ∑' k : ℕ, (fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval (n : ℤ_[p]) := by
+  simp_rw [fwdDiffRatio_iter_fwdDiff, PadicInt.algebraMap_apply, PadicInt.coe_one, one_pow, div_one, descPochhammer_eval_eq_descFactorial, PadicInt.coe_natCast, div_mul_comm]
+  have (n : ℕ) :
+      n = ((n : ℚ) : ℚ_[p]) := by
+    simp only [Rat.cast_natCast]
+
+  simp_rw [this, ← Padic.coe_div]
+
+  have (n k : ℕ) :
+      ((n.descFactorial k) : ℚ) / (k.factorial : ℚ) = n.choose k := by
+    simp_rw [Nat.choose_eq_descFactorial_div_factorial]
+    rw [Nat.cast_div]
+    · exact Nat.factorial_dvd_descFactorial n k
+    · simp_rw [ne_eq, Nat.cast_eq_zero, ← ne_eq]
+      apply Nat.factorial_ne_zero
+
+  simp_rw [this, Rat.cast_natCast]
+
+  have (n : ℕ) : ∑' k : ℕ, (n.choose k) * (fwdDiff 1)^[k] f 0 = ∑ k ∈ Finset.range (n + 1), (n.choose k) * (fwdDiff 1)^[k] f 0 := by
+    rw [tsum_eq_sum]
+    intros k hk
+    simp only [Finset.mem_range, not_lt] at hk
+    simp only [mul_eq_zero, Nat.cast_eq_zero]
+    apply Or.intro_left
+    rw [Nat.choose_eq_zero_iff]
+    exact hk
+
+  simp_rw [this]
+
+  have newton := shift_eq_sum_fwdDiff_iter 1 f n 0
+  simp only [nsmul_eq_mul, mul_one, zero_add] at newton
+
+  exact newton
+
+/-
+theorem PadicInt.norm_ascPochhammer_le (k : ℕ) (x : ℤ_[p]) :
+    ‖(ascPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
+  sorry
+  revert x
+  induction' k with k hk
+  · simp_rw [ascPochhammer_zero, Polynomial.eval_one, norm_one, Nat.factorial_zero, Nat.cast_one, le_refl, implies_true]
+  · intro x
+    simp_rw [ascPochhammer_succ_eval, Nat.factorial_succ]
+    simp_rw [norm_mul, Nat.cast_mul, Nat.cast_add, Nat.cast_one, padicNormE.mul]
+    calc
+      _ ≤ ‖Polynomial.eval x (ascPochhammer ℤ_[p] k)‖ * (‖x‖ + ‖(k : ℚ_[p])‖) := by
+        apply mul_le_mul_of_nonneg_left
+        · apply norm_add_le
+        · simp_rw [norm_nonneg]
+      _ ≤ _ := by
+        rw [mul_comm]
+        apply mul_le_mul_of_nonpos_of_nonneg
+        · calc
+
+          sorry
+        · sorry
+        · sorry
+        · sorry
+
+theorem PadicInt.norm_descPochhammer_le (k : ℕ) (x : ℤ_[p]) :
+    ‖(descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
+  sorry
+
+theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
+    f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, (fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
+  apply DenseRange.equalizer PadicInt.denseRange_natCast
+  · exact ContinuousMap.continuous f
+  · have term_continuous : ∀ k : ℕ, Continuous fun x ↦ (fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
+      intro k
+      apply Continuous.mul
+      · exact continuous_const
+      · apply Continuous.subtype_val
+        apply Polynomial.continuous
+
+    have term_bound_summable : Summable fun k : ℕ ↦ ‖(fwdDiffRatio 1)^[k] f 0‖ := by
+      sorry
+
+    have term_bound : ∀ k : ℕ, ∀ x : ℤ_[p], ‖(fwdDiffRatio 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(fwdDiffRatio 1)^[k] f 0‖ := by
+      simp_rw [fwdDiffRatio_iter_fwdDiff, PadicInt.algebraMap_apply, PadicInt.coe_one, one_pow, div_one, padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
+      intros k x
+      apply mul_le_of_le_one_left
+      · simp only [norm_nonneg]
+      · rw [div_le_one]
+        apply PadicInt.norm_descPochhammer_le
+        · simp_rw [norm_pos_iff, ne_eq, Nat.cast_eq_zero, ← ne_eq]
+          apply Nat.factorial_ne_zero
+
+    apply continuous_tsum term_continuous term_bound_summable term_bound
+
+  · ext n
+    simp only [Function.comp_apply]
+    rw [natural_mahler]
+
+theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
+  exact IsUltrametricDist.nonarchimedeanAddGroup
+
+-/
