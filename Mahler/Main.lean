@@ -7,6 +7,8 @@ import Mahler.Help
 import Mathlib.NumberTheory.Padics.ProperSpace
 import Mathlib.Analysis.NormedSpace.FunctionSeries
 import Mathlib.Topology.Algebra.Polynomial
+import Mathlib.Topology.Algebra.InfiniteSum.Nonarchimedean
+
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
@@ -29,6 +31,7 @@ private theorem Padic.bojanic (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) 
 theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
     ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖(fwdDiff h)^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff h)^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
   have hf : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (b a: ℤ_[p]), ‖a - b‖ ≤ p^(-(t : ℤ)) → ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
+    ---
     apply Padic.uniformContinuous_then_nonzero_norm_le_pow
     exact CompactSpace.uniformContinuous_of_continuous f.continuous
   have hf' : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (x : ℤ_[p]),  ‖f (x • h + (p : ℤ_[p])^t • h) - f (x • h)‖ ≤ p^(-(s : ℤ)) := by
@@ -121,7 +124,8 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
           calc
             _ ≤ (p : ℝ)^(-(1 : ℕ) : ℤ) * ‖(fwdDiff h)^[a + 1 + n] f 0‖ := by
               apply mul_le_mul_of_nonneg_right
-              · simp only [padicNormE.norm_nat_le_pow_iff_dvd, pow_one]
+              ·
+                simp_rw [padicNormE.norm_nat_le_pow_iff_dvd, pow_one]
                 apply Nat.cast_dvd_cast
                 apply Nat.Prime.dvd_choose_pow
                 · exact hp.out
@@ -145,6 +149,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
 
 theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
     Filter.Tendsto (fun k ↦ (fwdDiff h)^[k] f 0) Filter.atTop (nhds 0) := by
+  ---
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f
   have hy := fun x ↦ ContinuousMap.norm_coe_le_norm f x
@@ -160,6 +165,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
         exact k x
       obtain ⟨x, hx⟩ := k'
       have l : Padic.addValuation (f x) = ⊤ := by
+        ---
         rw [eq_top_iff, ← hb, Padic.addValuation_le_addValuation_iff_norm_le_norm]
         exact hy x
       have l' : Padic.addValuation (f x) ≠ ⊤ := by
@@ -184,6 +190,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
           exact hp.out.pos
       specialize this Hx 0
       have Hb : addValuation ((p : ℚ_[p]) ^ (-b : ℤ) * f y) = (0 : ℤ) := by
+        ---
         rw [eq_comm, Padic.eq_addValuation_iff_norm_eq_pow_neg]
         simp only [zpow_neg, padicNormE.mul, norm_inv, padicNormE.norm_p_zpow, inv_inv, neg_zero, zpow_zero]
         apply (IsUnit.mul_eq_one_iff_inv_eq _).mpr _
@@ -197,7 +204,8 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
           · simp only [ne_eq, Int.cast_eq_zero]
             simp only [← ne_eq]
             exact hb'
-        · rw [← zpow_neg, eq_comm, ← Padic.eq_addValuation_iff_norm_eq_pow_neg, eq_comm]
+        · ---
+          rw [← zpow_neg, eq_comm, ← Padic.eq_addValuation_iff_norm_eq_pow_neg, eq_comm]
           exact hb
       simp only [Hb, WithTop.coe_zero, true_implies] at this
       intro m
@@ -241,8 +249,10 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
         · intros j
           induction' j with j hj
           . simp only [zero_mul, zero_le, CharP.cast_eq_zero, add_zero, true_implies]
+            ---
             simp only [← Padic.le_addValuation_iff_norm_le_pow_neg]
             rw [← hb]
+            ---
             simp only [Padic.addValuation_le_addValuation_iff_norm_le_norm]
             rw [hy']
             apply IsUltrametricDist.norm_fwdDiff_iter_apply_le
@@ -364,13 +374,55 @@ theorem PadicInt.norm_ascPochhammer_le (k : ℕ) (x : ℤ_[p]) :
 theorem PadicInt.norm_descPochhammer_le (k : ℕ) (x : ℤ_[p]) :
     ‖(descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
   sorry
+
+theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
+  exact IsUltrametricDist.nonarchimedeanAddGroup
 -/
 
 theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
     f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast
   · exact ContinuousMap.continuous f
-  · /-
+  · have : TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), (fwdDiff 1)^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), (fwdDiff 1)^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
+      sorry
+      -- rw [← Nat.cofinite_eq_atTop]
+      -- rw [TendstoUniformly]
+
+      -- Filter.Tendsto.cauchySeq
+      -- cauchySeq_tendsto_of_isComplete
+
+
+      -- rw [← tendstoUniformlyOn_univ, tendstoUniformly_iff_tendsto]
+      -- ← tendstoLocallyUniformly_iff_tendstoUniformly_of_compactSpace
+      -- rw [← ContinuousMap.tendsto_iff_tendstoLocallyUniformly]
+
+      -- apply ContinuousMap.tendstoLocallyUniformly_of_tendsto
+      -- apply Filter.Tendsto.cauchySeq
+
+      -- apply Filter.Tendsto.tendstoUniformlyOn
+      /-
+      apply UniformCauchySeqOn.tendstoUniformlyOn_of_tendsto
+      · apply NonarchimedeanAddGroup.cauchySeq_sum_of_tendsto_cofinite_zero
+        sorry
+      · simp only [Set.mem_univ, forall_const]
+        intro x
+        sorry
+      -/
+      -- UniformCauchySeqOn.cauchy_map
+      -- apply NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero
+
+    apply TendstoUniformly.continuous this
+    · simp only [Filter.eventually_atTop, ge_iff_le]
+      use 0
+      intros N hn
+      apply continuous_finset_sum (Finset.range (N + 1))
+      intro i hn
+      apply Continuous.mul
+      · exact continuous_const
+      · apply Continuous.comp'
+        · exact continuous_iff_le_induced.mpr fun U a ↦ a
+        · apply Polynomial.continuous_eval₂
+    /-
     have term_continuous : ∀ k : ℕ, Continuous fun x ↦ (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
       intro k
       apply Continuous.mul
@@ -378,8 +430,7 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
       · apply Continuous.subtype_val
         apply Polynomial.continuous
 
-    have term_bound_summable : Summable fun k : ℕ ↦ ‖(fwdDiff 1)^[k] f 0‖ := by
-      sorry
+
 
     have term_bound : ∀ k : ℕ, ∀ x : ℤ_[p], ‖(fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(fwdDiff 1)^[k] f 0‖ := by
       simp_rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
@@ -394,13 +445,6 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
 
     apply continuous_tsum term_continuous term_bound_summable term_bound
     -/
-    sorry
   · ext n
     simp only [Function.comp_apply]
     rw [natural_mahler]
-
--- NonarchimedeanAddGroup.cauchySeq_sum_of_tendsto_cofinite_zero
---
-
-theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
-  exact IsUltrametricDist.nonarchimedeanAddGroup

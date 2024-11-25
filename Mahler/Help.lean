@@ -190,6 +190,8 @@ theorem padicNormE.norm_nat_le_pow_iff_dvd (k n : ℕ) :
     m ≤ Padic.addValuation x ↔ ‖x‖ ≤ (p : ℝ)^(-(m : ℤ)) := by
   exact Padic.le_addValuation_iff_norm_le_pow_neg x m
 
+--------------------------------------------------------------------------------------------------
+
 theorem Padic.tendsto_atTop_norm_lt_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
     (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ‖s n - L‖ < (p : ℝ)^(-(m : ℤ)) := by
   simp only [Metric.tendsto_atTop, dist_eq_norm_sub]
@@ -230,77 +232,6 @@ theorem Padic.tendsto_atTop_addValuation_le (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
 theorem Padic.tendsto_atTop_norm_le_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
     (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ‖s n - L‖ ≤ (p : ℝ)^(-(m : ℤ)) := by
   simp_rw [Padic.tendsto_atTop_addValuation_le, Padic.le_addValuation_iff_norm_le_pow_neg']
-
-theorem Padic.continuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
-    Continuous f ↔ ∀ b : ℤ_[p], ∀ s : ℕ, ∃ t : ℕ, ∀ a : ℤ_[p], ‖a - b‖ < p^(-(t : ℤ)) → ‖f a - f b‖ < p^(-(s : ℤ)) := by
-  simp only [Metric.continuous_iff, dist_eq_norm_sub]
-  constructor
-  · intros Hε b s
-    specialize Hε b ((p : ℝ)^(-(s : ℤ)))
-    obtain ⟨δ, hδ, Hδ⟩ := by
-      apply Hε
-      apply zpow_pos
-      exact Nat.cast_pos.mpr hp.out.pos
-    obtain ⟨t, ht⟩ := by
-      exact PadicInt.exists_pow_neg_lt p hδ
-    use t
-    intros a ha
-    have ha : ‖a - b‖ < δ := by
-      apply lt_of_lt_of_le ha
-      exact le_of_lt ht
-    specialize Hδ a ha
-    exact Hδ
-  · intros Hs b ε hε
-    obtain ⟨s, hs⟩ := by
-      exact PadicInt.exists_pow_neg_lt p hε
-    specialize Hs b s
-    obtain ⟨t, ht⟩ := by
-      exact Hs
-    use (p : ℝ)^(-(t : ℤ))
-    constructor
-    · apply zpow_pos
-      exact Nat.cast_pos.mpr hp.out.pos
-    · intros a ha
-      apply lt_of_lt_of_le _ (le_of_lt hs)
-      apply ht
-      exact ha
-
-theorem Padic.continuous_iff_addValuation_lt (f : ℤ_[p] → ℚ_[p]) :
-    Continuous f ↔ ∀ b : ℤ_[p], ∀ s : ℕ, ∃ t : ℕ, ∀ a : ℤ_[p], t < Padic.addValuation (a - b : ℚ_[p]) → s < Padic.addValuation (f a - f b) := by
-  simp_rw [Padic.continuous_iff_norm_lt_pow, ← PadicInt.padic_norm_e_of_padicInt, Padic.lt_addValuation_iff_norm_lt_pow_neg', PadicInt.coe_sub]
-
-theorem Padic.continuous_iff_addValuation_le (f : ℤ_[p] → ℚ_[p]) :
-    Continuous f ↔ ∀ b : ℤ_[p], ∀ s : ℕ, ∃ t : ℕ, ∀ a : ℤ_[p], t ≤ Padic.addValuation (a - b : ℚ_[p]) → s ≤ Padic.addValuation (f a - f b) := by
-  rw [Padic.continuous_iff_addValuation_lt]
-  constructor
-  · intros hlt b s
-    specialize hlt b s
-    obtain ⟨t, ht⟩ := by
-      exact hlt
-    use (t + 1)
-    intros a h
-    rw [Nat.cast_add_one, WithTopInt.add_one_le_iff'] at h
-    specialize ht a
-    apply le_of_lt
-    apply ht
-    exact h
-  · intros hle b s
-    specialize hle b (s + 1)
-    obtain ⟨t, ht⟩ := by
-      exact hle
-    simp_rw [Nat.cast_add_one, WithTopInt.add_one_le_iff'] at ht
-    use t
-    intros a h
-    specialize ht a
-    apply ht
-    apply le_of_lt
-    exact h
-
-theorem Padic.continuous_iff_norm_le_pow (f : ℤ_[p] → ℚ_[p]) :
-    Continuous f ↔ ∀ b : ℤ_[p], ∀ s : ℕ, ∃ t : ℕ, ∀ a : ℤ_[p], ‖a - b‖ ≤ p^(-(t : ℤ)) → ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
-  simp_rw [Padic.continuous_iff_addValuation_le, ← Padic.le_addValuation_iff_norm_le_pow_neg', ← PadicInt.coe_sub]
-  simp only [PadicInt.coe_sub, le_addValuation_iff_norm_le_pow_neg', zpow_neg, zpow_natCast]
-  exact Multiplicative.forall
 
 theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
     UniformContinuous f ↔ ∀ s : ℕ, ∃ t : ℕ, ∀ b a : ℤ_[p], ‖a - b‖ < p^(-(t : ℤ)) → ‖f a - f b‖ < p^(-(s : ℤ)) := by
