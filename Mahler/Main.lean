@@ -13,13 +13,13 @@ import Mathlib.Topology.Algebra.InfiniteSum.Nonarchimedean
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
 private theorem Padic.bojanic (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) (t : ℕ):
-      ((p ^ t).choose (p^t)) • (fwdDiff h)^[p^t] ((fwdDiff h)^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • (fwdDiff h)^[k + 1] ((fwdDiff h)^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t • h + k • h) - f (0 + k • h)) := by
+      ((p ^ t).choose (p^t)) • δ_[h]^[p^t] (δ_[h]^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • δ_[h]^[k + 1] (δ_[h]^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t • h + k • h) - f (0 + k • h)) := by
     simp only [smul_sub, Finset.sum_sub_distrib, ← fwdDiff_iter_eq_sum_shift]
     rw [add_sub, neg_add_eq_sub, sub_sub, eq_sub_iff_add_eq, add_comm]
-    have k' : ((p ^ t).choose 0) • (fwdDiff h)^[0] ((fwdDiff h)^[n] f) = (fwdDiff h)^[n] f := by
+    have k' : ((p ^ t).choose 0) • δ_[h]^[0] (δ_[h]^[n] f) = δ_[h]^[n] f := by
       simp only [Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul]
     nth_rewrite 2 [← k']
-    have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • (fwdDiff h)^[k] ((fwdDiff h)^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • (fwdDiff h)^[k + 1] ((fwdDiff h)^[n] f) 0 + ((p ^ t).choose 0 • (fwdDiff h)^[0] ((fwdDiff h)^[n] f)) 0 := by
+    have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • δ_[h]^[k] (δ_[h]^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • δ_[h]^[k + 1] (δ_[h]^[n] f) 0 + ((p ^ t).choose 0 • δ_[h]^[0] (δ_[h]^[n] f)) 0 := by
       have k'' : Nat.succ (Nat.pred (p^t)) = p^t := by
         apply Nat.succ_pred_eq_of_pos
         exact Nat.pow_pos hp.out.pos
@@ -29,7 +29,7 @@ private theorem Padic.bojanic (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) 
     simp only [nsmul_eq_mul, Nat.cast_pow, zero_add]
 
 theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
-    ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖(fwdDiff h)^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff h)^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
+    ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖δ_[h]^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖δ_[h]^[j + 1 + n] f 0‖)) ((p : ℝ)^(-(s : ℤ))) := by
   have hf : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ (b a: ℤ_[p]), ‖a - b‖ ≤ p^(-(t : ℤ)) → ‖f a - f b‖ ≤ p^(-(s : ℤ)) := by
     ---
     apply Padic.uniformContinuous_then_nonzero_norm_le_pow
@@ -79,25 +79,25 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
     simp only [Finset.nonempty_range_iff, ne_eq, AddLeftCancelMonoid.add_eq_zero, one_ne_zero, and_false, not_false_eq_true]
 
   calc
-    _ ≤ max ‖∑ x ∈ Finset.range (p ^ t - 1), -((p ^ t).choose (x + 1) • (fwdDiff h)^[x + 1 + n] f 0)‖ ‖∑ x ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - x) * (n.choose x)) • (f (p ^ t • h + x • h) - f (x • h))‖ := by
+    _ ≤ max ‖∑ x ∈ Finset.range (p ^ t - 1), -((p ^ t).choose (x + 1) • δ_[h]^[x + 1 + n] f 0)‖ ‖∑ x ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - x) * (n.choose x)) • (f (p ^ t • h + x • h) - f (x • h))‖ := by
       rw [k]
       apply padicNormE.nonarchimedean
-    _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖-((p ^ t).choose (j + 1) • (fwdDiff h)^[j + 1 + n] f 0)‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖((-1 : ℤ) ^ (n - j) * (n.choose j)) • (f (p ^ t • h + j • h) - f (j • h))‖)) := by
+    _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖-((p ^ t).choose (j + 1) • δ_[h]^[j + 1 + n] f 0)‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖((-1 : ℤ) ^ (n - j) * (n.choose j)) • (f (p ^ t • h + j • h) - f (j • h))‖)) := by
       apply max_le_max
       · apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty
         · exact Finset.Aesop.range_nonempty hpt
-        · intros i hi
-          apply Finset.le_sup' (fun j : ℕ ↦ ‖-((p ^ t).choose (j + 1) • (fwdDiff h)^[j + 1 + n] f 0)‖) hi
+        · intro i hi
+          apply Finset.le_sup' (fun j : ℕ ↦ ‖-((p ^ t).choose (j + 1) • δ_[h]^[j + 1 + n] f 0)‖) hi
       · apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty
         · apply Finset.Aesop.range_nonempty
           exact Nat.add_one_ne_zero n
-        · intros i hi
+        · intro i hi
           apply Finset.le_sup' (fun j : ℕ ↦ ‖((-1 : ℤ) ^ (n - j) * (n.choose j)) • (f (p ^ t • h + j • h) - f (j • h))‖) hi
-    _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖(p ^ t).choose (j + 1) • (fwdDiff h)^[j + 1 + n] f 0‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖(n.choose j : ℚ_[p])‖ * ‖f (p ^ t • h + j • h) - f (j • h)‖)) := by
+    _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖(p ^ t).choose (j + 1) • δ_[h]^[j + 1 + n] f 0‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖(n.choose j : ℚ_[p])‖ * ‖f (p ^ t • h + j • h) - f (j • h)‖)) := by
       apply max_le_max
       · simp only [norm_neg, le_refl]
       · simp only [Int.reduceNeg, zsmul_eq_mul, Int.cast_mul, Int.cast_pow, Int.cast_neg, Int.cast_one, Int.cast_natCast, padicNormE.mul, norm_pow, norm_neg, norm_one, one_pow, one_mul, le_refl]
-    _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖(p ^ t).choose (j + 1) • (fwdDiff h)^[j + 1 + n] f 0‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖f (p ^ t • h + j • h) - f (j • h)‖)) := by
+    _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖(p ^ t).choose (j + 1) • δ_[h]^[j + 1 + n] f 0‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖f (p ^ t • h + j • h) - f (j • h)‖)) := by
       apply max_le_max
       · simp only [le_refl]
       · simp only [Finset.sup'_le_iff]
@@ -115,14 +115,14 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
     _ ≤ _ := by
       apply max_le_max
       · simp only [Finset.sup'_le_iff]
-        intros a ha
+        intro a ha
         simp only [Finset.le_sup'_iff]
         use a
         constructor
         · exact ha
         · simp only [nsmul_eq_mul, padicNormE.mul]
           calc
-            _ ≤ (p : ℝ)^(-(1 : ℕ) : ℤ) * ‖(fwdDiff h)^[a + 1 + n] f 0‖ := by
+            _ ≤ (p : ℝ)^(-(1 : ℕ) : ℤ) * ‖δ_[h]^[a + 1 + n] f 0‖ := by
               apply mul_le_mul_of_nonneg_right
               ·
                 simp_rw [padicNormE.norm_nat_le_pow_iff_dvd, pow_one]
@@ -138,7 +138,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
             _ ≤ _ := by
               simp only [Nat.cast_one, le_refl]
       · simp only [Finset.sup'_le_iff]
-        intros a _
+        intro a _
         specialize ht a
         rw [add_comm]
         simp only [nsmul_eq_mul, Nat.cast_pow, zpow_neg, zpow_natCast]
@@ -148,7 +148,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
 ------------------------------------------------------------------------------------------
 
 theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
-    Filter.Tendsto (fun k ↦ (fwdDiff h)^[k] f 0) Filter.atTop (nhds 0) := by
+    Filter.Tendsto (fun k ↦ δ_[h]^[k] f 0) Filter.atTop (nhds 0) := by
   ---
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f
@@ -212,7 +212,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
       specialize this (Nat.floor (m - b))
       obtain ⟨N, hN⟩ := this
       use N
-      intros n hn
+      intro n hn
       specialize hN n hn
       simp only [fwdDiff_iter_const_smul, Pi.smul_apply, smul_eq_mul, padicNormE.mul, neg_neg, padicNormE.norm_p_zpow] at hN
       rw [mul_comm] at hN
@@ -239,14 +239,14 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
             exact hp.out.pos
     · rw [hb'] at hb
       have l := Padic.special h f
-      have l' : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ j : ℕ, j ≤ s → ∀ n : ℕ, (j * p ^ t ≤ n → ‖(fwdDiff h)^[n] f 0‖ ≤ (p : ℝ) ^ (- j : ℤ)) := by
+      have l' : ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ j : ℕ, j ≤ s → ∀ n : ℕ, (j * p ^ t ≤ n → ‖δ_[h]^[n] f 0‖ ≤ (p : ℝ) ^ (- j : ℤ)) := by
         intro s
         specialize l s
         obtain ⟨t, ⟨ht', ht⟩⟩ := l
         use t
         constructor
         · exact ht'
-        · intros j
+        · intro j
           induction' j with j hj
           . simp only [zero_mul, zero_le, CharP.cast_eq_zero, add_zero, true_implies]
             ---
@@ -256,7 +256,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
             simp only [Padic.addValuation_le_addValuation_iff_norm_le_norm]
             rw [hy']
             apply IsUltrametricDist.norm_fwdDiff_iter_apply_le
-          · intros hj' n hn
+          · intro hj' n hn
             specialize ht (n - p^t)
             have : p ^ t + (n - p ^ t) = n := by
               apply Nat.add_sub_of_le
@@ -280,7 +280,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
                   _ ≤ _ := hn
               specialize hj (k + 1 + (n - p ^ t)) this
               calc
-                _ ≤ (p : ℝ)^(-1 : ℤ) * ‖(fwdDiff h)^[k + 1 + (n - p ^ t)] f 0‖ := hk
+                _ ≤ (p : ℝ)^(-1 : ℤ) * ‖δ_[h]^[k + 1 + (n - p ^ t)] f 0‖ := hk
                 _ ≤ (p : ℝ)^(-1 : ℤ) * (p : ℝ)^(-j : ℤ) := by
                   apply (mul_le_mul_iff_of_pos_left ?_).mpr
                   . exact hj
@@ -312,7 +312,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
-    f n = ∑' k : ℕ, (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval (n : ℤ_[p]) := by
+    f n = ∑' k : ℕ, δ_[1]^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval (n : ℤ_[p]) := by
   simp_rw [descPochhammer_eval_eq_descFactorial, PadicInt.coe_natCast, div_mul_comm]
   have (n : ℕ) :
       n = ((n : ℚ) : ℚ_[p]) := by
@@ -330,9 +330,9 @@ theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
 
   simp_rw [this, Rat.cast_natCast]
 
-  have (n : ℕ) : ∑' k : ℕ, (n.choose k) * (fwdDiff 1)^[k] f 0 = ∑ k ∈ Finset.range (n + 1), (n.choose k) * (fwdDiff 1)^[k] f 0 := by
+  have (n : ℕ) : ∑' k : ℕ, (n.choose k) * δ_[1]^[k] f 0 = ∑ k ∈ Finset.range (n + 1), (n.choose k) * δ_[1]^[k] f 0 := by
     rw [tsum_eq_sum]
-    intros k hk
+    intro k hk
     simp only [Finset.mem_range, not_lt] at hk
     simp only [mul_eq_zero, Nat.cast_eq_zero]
     apply Or.intro_left
@@ -380,10 +380,10 @@ theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
 -/
 
 theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
-    f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
+    f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, δ_[1]^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast
   · exact ContinuousMap.continuous f
-  · have : TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), (fwdDiff 1)^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), (fwdDiff 1)^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
+  · have : TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
       sorry
       -- rw [← Nat.cofinite_eq_atTop]
       -- rw [TendstoUniformly]
@@ -414,7 +414,7 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
     apply TendstoUniformly.continuous this
     · simp only [Filter.eventually_atTop, ge_iff_le]
       use 0
-      intros N hn
+      intro N hn
       apply continuous_finset_sum (Finset.range (N + 1))
       intro i hn
       apply Continuous.mul
@@ -423,7 +423,7 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
         · exact continuous_iff_le_induced.mpr fun U a ↦ a
         · apply Polynomial.continuous_eval₂
     /-
-    have term_continuous : ∀ k : ℕ, Continuous fun x ↦ (fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
+    have term_continuous : ∀ k : ℕ, Continuous fun x ↦ δ_[1]^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
       intro k
       apply Continuous.mul
       · exact continuous_const
@@ -432,9 +432,9 @@ theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
 
 
 
-    have term_bound : ∀ k : ℕ, ∀ x : ℤ_[p], ‖(fwdDiff 1)^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(fwdDiff 1)^[k] f 0‖ := by
+    have term_bound : ∀ k : ℕ, ∀ x : ℤ_[p], ‖δ_[1]^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x‖ ≤ ‖δ_[1]^[k] f 0‖ := by
       simp_rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
-      intros k x
+      intro k x
       apply mul_le_of_le_one_left
       · simp only [norm_nonneg]
       · rw [div_le_one]

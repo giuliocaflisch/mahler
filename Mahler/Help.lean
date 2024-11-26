@@ -196,12 +196,12 @@ theorem Padic.tendsto_atTop_norm_lt_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
     (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ‖s n - L‖ < (p : ℝ)^(-(m : ℤ)) := by
   simp only [Metric.tendsto_atTop, dist_eq_norm_sub]
   constructor
-  · intros Hε m
+  · intro Hε m
     specialize Hε ((p : ℝ)^(-(m : ℤ)))
     apply Hε
     apply zpow_pos
     exact Nat.cast_pos.mpr hp.out.pos
-  · intros Hm ε hε
+  · intro Hm ε hε
     obtain ⟨n, hn⟩ := by
       exact PadicInt.exists_pow_neg_lt p hε
     obtain ⟨u, hu⟩ := Hm n
@@ -215,16 +215,16 @@ theorem Padic.tendsto_atTop_addValuation_le (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
     (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → m ≤ Padic.addValuation (s n - L) := by
   rw [Padic.tendsto_atTop_addValuation_lt]
   constructor
-  · intros hlt m
+  · intro hlt m
     specialize hlt m
     obtain ⟨N, hN⟩ := by
       exact hlt
     use N
-    intros n hn
+    intro n hn
     apply le_of_lt
     apply hN
     exact hn
-  · intros hle m
+  · intro hle m
     specialize hle (m + 1)
     simp_rw [Nat.cast_add_one, WithTopInt.add_one_le_iff'] at hle
     exact hle
@@ -237,7 +237,7 @@ theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
     UniformContinuous f ↔ ∀ s : ℕ, ∃ t : ℕ, ∀ b a : ℤ_[p], ‖a - b‖ < p^(-(t : ℤ)) → ‖f a - f b‖ < p^(-(s : ℤ)) := by
   simp only [Metric.uniformContinuous_iff, dist_eq_norm_sub]
   constructor
-  · intros Hε s
+  · intro Hε s
     specialize Hε ((p : ℝ)^(-(s : ℤ)))
     obtain ⟨δ, hδ, Hδ⟩ := by
       apply Hε
@@ -245,12 +245,12 @@ theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
       exact Nat.cast_pos.mpr hp.out.pos
     obtain ⟨t, ht⟩ := PadicInt.exists_pow_neg_lt p hδ
     use t
-    intros b a ha
+    intro b a ha
     have ha : ‖a - b‖ < δ := by
       apply lt_of_lt_of_le ha
       exact le_of_lt ht
     exact Hδ ha
-  · intros Hs ε hε
+  · intro Hs ε hε
     obtain ⟨s, hs⟩ := PadicInt.exists_pow_neg_lt p hε
     specialize Hs s
     obtain ⟨t, ht⟩ := Hs
@@ -271,21 +271,21 @@ theorem Padic.uniformContinuous_iff_addValuation_le (f : ℤ_[p] → ℚ_[p]) :
     UniformContinuous f ↔ ∀ s : ℕ, ∃ t : ℕ, ∀ b a : ℤ_[p], t ≤ Padic.addValuation (a - b : ℚ_[p]) → s ≤ Padic.addValuation (f a - f b) := by
   rw [Padic.uniformContinuous_iff_addValuation_lt]
   constructor
-  · intros hlt s
+  · intro hlt s
     specialize hlt s
     obtain ⟨t, ht⟩ := hlt
     use (t + 1)
-    intros a b h
+    intro a b h
     rw [Nat.cast_add_one, WithTopInt.add_one_le_iff'] at h
     apply le_of_lt
     apply ht
     exact h
-  · intros hle s
+  · intro hle s
     specialize hle (s + 1)
     obtain ⟨t, ht⟩ := hle
     simp_rw [Nat.cast_add_one, WithTopInt.add_one_le_iff'] at ht
     use t
-    intros a b h
+    intro a b h
     apply ht
     apply le_of_lt
     exact h
