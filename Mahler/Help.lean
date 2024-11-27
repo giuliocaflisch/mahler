@@ -36,7 +36,7 @@ theorem descPochhammer_eval_nat_eq_descFactorial (n k : ℕ) :
 theorem WithTopInt.add_one_le_iff (x : ℤ) (y : WithTop ℤ) : x + 1 ≤ y ↔ x < y := by
   by_cases hy : y = ⊤
   · simp_rw [hy, WithTop.coe_lt_top, le_top]
-  · obtain ⟨z, hz⟩ := WithTop.ne_top_iff_exists.mp hy
+  · obtain ⟨_, hz⟩ := WithTop.ne_top_iff_exists.mp hy
     rw [← hz, WithTop.coe_lt_coe, ← WithTop.coe_one, ← WithTop.coe_add, WithTop.coe_le_coe]
     exact Int.add_one_le_iff
 

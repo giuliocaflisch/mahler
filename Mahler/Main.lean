@@ -8,7 +8,7 @@ import Mathlib.NumberTheory.Padics.ProperSpace
 import Mathlib.Analysis.NormedSpace.FunctionSeries
 import Mathlib.Topology.Algebra.Polynomial
 import Mathlib.Topology.Algebra.InfiniteSum.Nonarchimedean
-
+import Mathlib.NumberTheory.Padics.MahlerBasis
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 
@@ -17,12 +17,12 @@ private theorem Padic.bojanic (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) 
   simp_rw [smul_sub, Finset.sum_sub_distrib, ← fwdDiff_iter_eq_sum_shift]
   rw [add_sub, neg_add_eq_sub, sub_sub, eq_sub_iff_add_eq, add_comm]
   have k' : ((p ^ t).choose 0) • δ_[h]^[0] (δ_[h]^[n] f) = δ_[h]^[n] f := by
-    simp_rw [Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul]
+    simp_rw [Nat.choose_zero_right, Function.iterate_zero_apply, one_smul]
   nth_rw 2 [← k']
   have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • δ_[h]^[k] (δ_[h]^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • δ_[h]^[k + 1] (δ_[h]^[n] f) 0 + ((p ^ t).choose 0 • δ_[h]^[0] (δ_[h]^[n] f)) 0 := by
     have : Nat.succ (Nat.pred (p^t)) = p^t := Nat.succ_pred_eq_of_pos (Nat.pow_pos hp.out.pos)
     rw [← this, Finset.sum_range_succ']
-    simp only [Nat.pred_eq_sub_one, Nat.succ_eq_add_one, Function.iterate_succ, Function.comp_apply, nsmul_eq_mul, Nat.choose_zero_right, Function.iterate_zero, id_eq, one_smul, add_tsub_cancel_right]
+    simp only [Nat.pred_eq_sub_one, Nat.succ_eq_add_one, Function.iterate_succ, Function.comp_apply, nsmul_eq_mul, Nat.choose_zero_right, Function.iterate_zero_apply, one_smul, add_tsub_cancel_right]
   rw [← k', ← Finset.sum_range_succ, ← shift_eq_sum_fwdDiff_iter]
   simp_rw [nsmul_eq_mul, Nat.cast_pow, zero_add]
 
@@ -135,7 +135,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
 
 ------------------------------------------------------------------------------------------
 
-theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
+theorem PadicInt.fwdDiff_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
     Filter.Tendsto (fun k ↦ δ_[h]^[k] f 0) Filter.atTop (nhds 0) := by
   ---
   simp only [Padic.tendsto_atTop_norm_le_pow, Rat.cast_zero, sub_zero]
@@ -160,7 +160,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
         simp only [Padic.addValuation.apply hx, ne_eq, WithTop.coe_ne_top, not_false_eq_true]
       exact l' l
     rw [k]
-    simp only [ge_iff_le, fwdDiff_const_zero_iterate, norm_zero, zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg, implies_true, exists_const]
+    simp only [ge_iff_le, fwdDiff_const_zero_iter, norm_zero, zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg, implies_true, exists_const]
   | coe b =>
     wlog hb' : b = 0
     · rw [← ne_eq] at hb'
@@ -177,7 +177,7 @@ theorem Padic.fwdDiff_iter_at_zero_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], �
           simp only [Nat.cast_pos]
           exact hp.out.pos
       specialize this Hx 0
-      have Hb : addValuation ((p : ℚ_[p]) ^ (-b : ℤ) * f y) = (0 : ℤ) := by
+      have Hb : Padic.addValuation ((p : ℚ_[p]) ^ (-b : ℤ) * f y) = (0 : ℤ) := by
         ---
         rw [eq_comm, Padic.eq_addValuation_iff_norm_eq_pow_neg]
         simp only [zpow_neg, padicNormE.mul, norm_inv, padicNormE.norm_p_zpow, inv_inv, neg_zero, zpow_zero]
@@ -334,69 +334,56 @@ theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
   exact this
 
 /-
-theorem PadicInt.norm_ascPochhammer_le (k : ℕ) (x : ℤ_[p]) :
-    ‖(ascPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
-  sorry
-  revert x
-  induction' k with k hk
-  · simp_rw [ascPochhammer_zero, Polynomial.eval_one, norm_one, Nat.factorial_zero, Nat.cast_one, le_refl, implies_true]
-  · intro x
-    simp_rw [ascPochhammer_succ_eval, Nat.factorial_succ]
-    simp_rw [norm_mul, Nat.cast_mul, Nat.cast_add, Nat.cast_one, padicNormE.mul]
-    calc
-      _ ≤ ‖Polynomial.eval x (ascPochhammer ℤ_[p] k)‖ * (‖x‖ + ‖(k : ℚ_[p])‖) := by
-        apply mul_le_mul_of_nonneg_left
-        · apply norm_add_le
-        · simp_rw [norm_nonneg]
-      _ ≤ _ := by
-        rw [mul_comm]
-        apply mul_le_mul_of_nonpos_of_nonneg
-        · calc
-
-          sorry
-        · sorry
-        · sorry
-        · sorry
-
-theorem PadicInt.norm_descPochhammer_le (k : ℕ) (x : ℤ_[p]) :
-    ‖(descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
-  sorry
-
 theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
   exact IsUltrametricDist.nonarchimedeanAddGroup
 -/
 
-theorem mahler (f : C(ℤ_[p], ℚ_[p])) :
+theorem PadicInt.norm_descPochhammer_le (k : ℕ) (x : ℤ_[p]) :
+    ‖(descPochhammer ℤ_[p] k).eval x‖ ≤ ‖(k.factorial : ℚ_[p])‖ := by
+  calc
+    _ = ‖(-1)^k * (descPochhammer ℤ_[p] k).eval x‖ := by
+      rw [norm_mul, norm_pow, norm_neg, norm_one, one_pow, one_mul]
+    _ = ‖(ascPochhammer ℤ_[p] k).eval (-x)‖ := by
+      rw [← ascPochhammer_eval_neg_eq_descPochhammer]
+    _ ≤ _ := norm_ascPochhammer_le _ _
+
+theorem my_mahler (f : C(ℤ_[p], ℚ_[p])) :
     f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, δ_[1]^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast (ContinuousMap.continuous f)
   · have : TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
+      rw [Metric.tendstoUniformly_iff]
+      intro ε hε
+      simp_rw [Filter.eventually_atTop, ge_iff_le, dist_eq_norm_sub]
+      use 0
+      intro b hb x
       sorry
-      -- rw [← Nat.cofinite_eq_atTop]
-      -- rw [TendstoUniformly]
-
-      -- Filter.Tendsto.cauchySeq
-      -- cauchySeq_tendsto_of_isComplete
-
-
-      -- rw [← tendstoUniformlyOn_univ, tendstoUniformly_iff_tendsto]
-      -- ← tendstoLocallyUniformly_iff_tendstoUniformly_of_compactSpace
-      -- rw [← ContinuousMap.tendsto_iff_tendstoLocallyUniformly]
-
-      -- apply ContinuousMap.tendstoLocallyUniformly_of_tendsto
-      -- apply Filter.Tendsto.cauchySeq
-
-      -- apply Filter.Tendsto.tendstoUniformlyOn
       /-
-      apply UniformCauchySeqOn.tendstoUniformlyOn_of_tendsto
-      · apply NonarchimedeanAddGroup.cauchySeq_sum_of_tendsto_cofinite_zero
-        sorry
-      · simp only [Set.mem_univ, forall_const]
-        intro x
-        sorry
-      -/
-      -- UniformCauchySeqOn.cauchy_map
-      -- apply NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero
+        rw [← Nat.cofinite_eq_atTop]
+        rw [TendstoUniformly]
 
+        Filter.Tendsto.cauchySeq
+        cauchySeq_tendsto_of_isComplete
+
+
+        rw [← tendstoUniformlyOn_univ, tendstoUniformly_iff_tendsto]
+        rw [← tendstoLocallyUniformly_iff_tendstoUniformly_of_compactSpace]
+        rw [← ContinuousMap.tendsto_iff_tendstoLocallyUniformly]
+
+        apply ContinuousMap.tendstoLocallyUniformly_of_tendsto
+        apply Filter.Tendsto.cauchySeq
+
+        apply Filter.Tendsto.tendstoUniformlyOn
+
+        apply UniformCauchySeqOn.tendstoUniformlyOn_of_tendsto
+        · apply NonarchimedeanAddGroup.cauchySeq_sum_of_tendsto_cofinite_zero
+          sorry
+        · simp only [Set.mem_univ, forall_const]
+          intro x
+          sorry
+
+        UniformCauchySeqOn.cauchy_map
+        apply NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero
+      -/
     apply TendstoUniformly.continuous this
     · simp only [Filter.eventually_atTop, ge_iff_le]
       use 0

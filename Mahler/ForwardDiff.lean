@@ -60,19 +60,17 @@ notation "δ_["h"]" => fwdDiff h
   rw [div_sub_div _ _ hx' hx, add_sub_cancel, div_eq_div_iff (mul_ne_zero hx' hx) (mul_ne_zero hx hx')]
   ring
 
-@[simp] theorem fwdDiff_const_zero_iterate (h : M) (n : ℕ) :
+@[simp] theorem fwdDiff_const_zero_iter (h : M) (n : ℕ) :
     δ_[h]^[n]  (fun (_ : M) ↦ (0 : G)) = (fun (_ : M) ↦ (0 : G)) := by
   induction' n with n hn
-  · rw [Function.iterate_zero, id_eq]
+  · rw [Function.iterate_zero_apply]
   · rw [Function.iterate_succ_apply', hn, fwdDiff_const]
 
 @[simp] theorem fwdDiff_iter_const_smul (h : M) (n : ℕ) (f : M → G) (r : S) :
     δ_[h]^[n] (r • f) = r • δ_[h]^[n] f := by
-  revert f
   induction' n with n hn
-  · simp_rw [Function.iterate_zero, id_eq, implies_true]
-  · intro f
-    simp_rw [Function.iterate_succ_apply, fwdDiff_const_smul, hn (δ_[h] f)]
+  · simp_rw [Function.iterate_zero_apply]
+  · simp_rw [Function.iterate_succ_apply', hn, fwdDiff_const_smul]
 
 --------------------------------------------------------------------
 
@@ -81,7 +79,7 @@ theorem shift_eq_sum_fwdDiff_iter (h : M) (f : M → G) (n : ℕ) (y : M):
   revert y
   induction' n with n hn
   · simp_rw [zero_smul, add_zero, zero_add, Finset.range_one, Finset.sum_singleton,
-      Nat.choose_self, Function.iterate_zero, id_eq, one_smul, implies_true]
+      Nat.choose_self, Function.iterate_zero_apply, one_smul, implies_true]
   · intro y
     rw [Finset.sum_range_succ', Nat.choose_zero_right]
     nth_rw 6 [← Nat.choose_zero_right n]
@@ -96,7 +94,7 @@ theorem fwdDiff_iter_eq_sum_shift (h : M) (n : ℕ) (f : M → G) (x : M) :
     δ_[h]^[n] f x = ∑ k ∈ Finset.range (n + 1), ( (-(1 : ℤ))^(n - k) * (n.choose k) ) • f (x + k • h) := by
   revert x
   induction' n with n hn
-  · simp_rw [Function.iterate_zero, id_eq, zero_add, Finset.sum_range_one, Nat.sub_zero, pow_zero,
+  · simp_rw [Function.iterate_zero_apply, zero_add, Finset.sum_range_one, Nat.sub_zero, pow_zero,
       Nat.choose_zero_right, Nat.cast_one, mul_one, one_smul, zero_smul, add_zero, implies_true]
   · intro x
     rw [Function.iterate_succ_apply', fwdDiff,
