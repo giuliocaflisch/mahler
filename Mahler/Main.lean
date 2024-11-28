@@ -268,10 +268,9 @@ theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
   have (n k : ℕ) :
       ((n.descFactorial k) : ℚ) / (k.factorial : ℚ) = n.choose k := by
     simp_rw [Nat.choose_eq_descFactorial_div_factorial]
-    rw [Nat.cast_div]
-    · exact Nat.factorial_dvd_descFactorial n k
-    · simp_rw [ne_eq, Nat.cast_eq_zero, ← ne_eq]
-      apply Nat.factorial_ne_zero
+    rw [Nat.cast_div (Nat.factorial_dvd_descFactorial n k)]
+    simp_rw [ne_eq, Nat.cast_eq_zero, ← ne_eq]
+    apply Nat.factorial_ne_zero
 
   simp_rw [this, Rat.cast_natCast]
 
@@ -280,9 +279,7 @@ theorem natural_mahler (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
     intro k hk
     simp only [Finset.mem_range, not_lt] at hk
     simp only [mul_eq_zero, Nat.cast_eq_zero]
-    apply Or.intro_left
-    rw [Nat.choose_eq_zero_iff]
-    exact hk
+    exact Or.intro_left _ (Nat.choose_eq_zero_iff.mpr hk)
 
   simp_rw [this]
 
