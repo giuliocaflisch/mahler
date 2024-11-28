@@ -16,14 +16,14 @@ private theorem Padic.bojanic (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) 
     ((p ^ t).choose (p^t)) • δ_[h]^[p^t] (δ_[h]^[n] f) 0 = - ∑ k ∈ Finset.range (p ^ t - 1), ((p ^ t).choose (k + 1)) • δ_[h]^[k + 1] (δ_[h]^[n] f) 0 + ∑ k ∈ Finset.range (n + 1), ((-1 : ℤ) ^ (n - k) * (n.choose k)) • (f (p ^ t • h + k • h) - f (0 + k • h)) := by
   simp_rw [smul_sub, Finset.sum_sub_distrib, ← fwdDiff_iter_eq_sum_shift]
   rw [add_sub, neg_add_eq_sub, sub_sub, eq_sub_iff_add_eq, add_comm]
-  have k' : ((p ^ t).choose 0) • δ_[h]^[0] (δ_[h]^[n] f) = δ_[h]^[n] f := by
+  have : ((p ^ t).choose 0) • δ_[h]^[0] (δ_[h]^[n] f) = δ_[h]^[n] f := by
     simp_rw [Nat.choose_zero_right, Function.iterate_zero_apply, one_smul]
-  nth_rw 2 [← k']
-  have k' : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • δ_[h]^[k] (δ_[h]^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • δ_[h]^[k + 1] (δ_[h]^[n] f) 0 + ((p ^ t).choose 0 • δ_[h]^[0] (δ_[h]^[n] f)) 0 := by
+  nth_rw 2 [← this]
+  have : ∑ k ∈ Finset.range (p ^ t), (p ^ t).choose (k) • δ_[h]^[k] (δ_[h]^[n] f) 0 = ∑ k ∈ Finset.range (p ^ t - 1), (p ^ t).choose (k + 1) • δ_[h]^[k + 1] (δ_[h]^[n] f) 0 + ((p ^ t).choose 0 • δ_[h]^[0] (δ_[h]^[n] f)) 0 := by
     have : Nat.succ (Nat.pred (p^t)) = p^t := Nat.succ_pred_eq_of_pos (Nat.pow_pos hp.out.pos)
     rw [← this, Finset.sum_range_succ']
     simp only [Nat.pred_eq_sub_one, Nat.succ_eq_add_one, Function.iterate_succ, Function.comp_apply, nsmul_eq_mul, Nat.choose_zero_right, Function.iterate_zero_apply, one_smul, add_tsub_cancel_right]
-  rw [← k', ← Finset.sum_range_succ, ← shift_eq_sum_fwdDiff_iter]
+  rw [← this, ← Finset.sum_range_succ, ← shift_eq_sum_fwdDiff_iter]
   simp_rw [nsmul_eq_mul, Nat.cast_pow, zero_add]
 
 theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
@@ -37,12 +37,12 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
     apply And.intro ht'
     intro x
     specialize ht (x • h) (x • h + p^t • h)
-    simp_rw [smul_eq_mul, zpow_neg, zpow_natCast]
-    simp_rw [smul_eq_mul, nsmul_eq_mul, Nat.cast_pow, add_sub_cancel_left, PadicInt.norm_mul, PadicInt.norm_pow, PadicInt.norm_p, inv_pow, zpow_neg, zpow_natCast] at ht
+    simp_rw [smul_eq_mul]
+    simp_rw [smul_eq_mul, nsmul_eq_mul, Nat.cast_pow, add_sub_cancel_left, PadicInt.norm_mul, PadicInt.norm_p_pow] at ht
     apply ht
     rw [mul_le_iff_le_one_right]
     · exact PadicInt.norm_le_one h
-    · simp only [inv_pos]
+    · simp_rw [zpow_neg, zpow_natCast, inv_pos]
       apply pow_pos
       simp only [Nat.cast_pos]
       exact hp.out.pos
@@ -65,9 +65,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
       _ ≤ _ := by
         apply Nat.pow_le_pow_of_le_left hp.out.two_le
 
-  have hpt' : Finset.Nonempty (Finset.range (p^t - 1)) := by
-    simp only [Finset.nonempty_range_iff]
-    exact hpt
+  have hpt' : Finset.Nonempty (Finset.range (p^t - 1)) := Finset.nonempty_range_iff.mpr hpt
   have hn' : Finset.Nonempty (Finset.range (n + 1)) := by
     simp_rw [Finset.nonempty_range_succ]
 
@@ -80,8 +78,7 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
       · apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty (Finset.Aesop.range_nonempty hpt)
         intro _ hi
         apply Finset.le_sup' _ hi
-      · apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty
-        apply Finset.Aesop.range_nonempty (Nat.add_one_ne_zero n)
+      · apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty (Finset.Aesop.range_nonempty (Nat.add_one_ne_zero _))
         intro _ hi
         apply Finset.le_sup' _ hi
     _ ≤ max (Finset.sup' (Finset.range (p^t - 1)) hpt' (fun j : ℕ ↦ ‖(p ^ t).choose (j + 1) • δ_[h]^[j + 1 + n] f 0‖)) (Finset.sup' (Finset.range (n + 1)) hn' (fun j : ℕ ↦ ‖(n.choose j : ℚ_[p])‖ * ‖f (p ^ t • h + j • h) - f (j • h)‖)) := by
@@ -112,17 +109,11 @@ theorem Padic.special (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])):
         simp only [nsmul_eq_mul, padicNormE.mul]
         calc
           _ ≤ (p : ℝ)^(-(1 : ℕ) : ℤ) * ‖δ_[h]^[a + 1 + n] f 0‖ := by
-            apply mul_le_mul_of_nonneg_right
-            · rw [padicNormE.norm_nat_le_pow_iff_dvd, pow_one]
-              apply Nat.cast_dvd_cast
-              apply Nat.Prime.dvd_choose_pow
-              · exact hp.out
-              . apply Nat.add_one_ne_zero
-              · simp only [Finset.mem_range] at ha
-                apply Nat.ne_of_lt
-                rw[← Nat.lt_sub_iff_add_lt]
-                exact ha
-            · simp only [norm_nonneg]
+            apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+            have (k n : ℕ) : ‖(k : ℚ_[p])‖ ≤ (p : ℝ) ^ (-(n : ℤ)) ↔ (p ^ n : ℤ) ∣ k := padicNormE.norm_int_le_pow_iff_dvd _ _
+            rw [this, pow_one]
+            rw [Finset.mem_range] at ha
+            exact Nat.cast_dvd_cast (Nat.Prime.dvd_choose_pow hp.out (Nat.add_one_ne_zero _) (Nat.ne_of_lt (Nat.lt_sub_iff_add_lt.mp ha)))
           _ ≤ _ := by
             simp only [Nat.cast_one, le_refl]
       · simp only [Finset.sup'_le_iff]
@@ -160,7 +151,7 @@ theorem PadicInt.fwdDiff_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
         simp only [Padic.addValuation.apply hx, ne_eq, WithTop.coe_ne_top, not_false_eq_true]
       exact l' l
     rw [k]
-    simp only [ge_iff_le, fwdDiff_const_zero_iter, norm_zero, zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg, implies_true, exists_const]
+    simp only [ge_iff_le, fwdDiff_iter_const_zero, norm_zero, zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg, implies_true, exists_const]
   | coe b =>
     wlog hb' : b = 0
     · rw [← ne_eq] at hb'
@@ -185,8 +176,7 @@ theorem PadicInt.fwdDiff_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
         · simp only [isUnit_iff_ne_zero]
           simp only [← Real.rpow_intCast]
           rw [Real.rpow_ne_zero]
-          · simp only [ne_eq, Nat.cast_eq_zero]
-            simp only [← ne_eq]
+          · rw [ne_eq, Nat.cast_eq_zero, ← ne_eq]
             exact hp.out.ne_zero
           · simp only [Nat.cast_nonneg]
           · simp only [ne_eq, Int.cast_eq_zero]
@@ -214,12 +204,10 @@ theorem PadicInt.fwdDiff_tendsto_zero (h : ℤ_[p]) (f : C(ℤ_[p], ℚ_[p])) :
         _ ≤ (p : ℝ)^(-(Nat.floor (m - b) : ℤ)) := by
           apply hN
         _ ≤ _ := by
-          simp only [← Real.rpow_intCast]
-          rw [← Real.rpow_add]
-          rw [Real.rpow_le_rpow_left_iff]
-          simp only [Nat.floor_int, Int.ofNat_toNat, Int.cast_neg, Int.cast_max, Int.cast_sub, Int.cast_natCast, Int.cast_zero, le_neg_add_iff_add_le, add_neg_le_iff_le_add]
-          rw [add_comm]
-          rw [← sub_le_iff_le_add]
+          simp_rw [← Real.rpow_intCast]
+          rw [← Real.rpow_add, Real.rpow_le_rpow_left_iff]
+          simp_rw [Nat.floor_int, Int.ofNat_toNat, Int.cast_neg, Int.cast_max, Int.cast_sub, Int.cast_natCast, Int.cast_zero, le_neg_add_iff_add_le, add_neg_le_iff_le_add]
+          rw [add_comm, ← sub_le_iff_le_add]
           simp only [le_max_iff, le_refl, tsub_le_iff_right, zero_add, true_or]
           · simp only [Nat.one_lt_cast]
             exact hp.out.one_lt

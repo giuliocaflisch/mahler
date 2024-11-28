@@ -21,10 +21,8 @@ theorem ContinuousMap.exists_norm_eq_norm_apply {X Y : Type*} [TopologicalSpace 
 theorem descPochhammer_eval_nat_eq_descFactorial (n k : ℕ) :
     (descPochhammer ℤ k).eval (Int.ofNat n) = n.descFactorial k := by
   induction' k with k hk
-  · rw [descPochhammer_zero]
-    simp_rw [Polynomial.eval_one, Nat.descFactorial_zero, Nat.cast_one]
-  · rw [descPochhammer_succ_eval, hk]
-    simp_rw [Int.ofNat_eq_coe, Nat.descFactorial_succ, Nat.cast_mul]
+  · simp_rw [descPochhammer_zero, Polynomial.eval_one, Nat.descFactorial_zero, Nat.cast_one]
+  · simp_rw [descPochhammer_succ_eval, hk, Int.ofNat_eq_coe, Nat.descFactorial_succ, Nat.cast_mul]
     by_cases h : n < k
     · rw [Nat.descFactorial_of_lt h, CharP.cast_eq_zero, zero_mul, mul_zero]
     · rw [not_lt] at h
@@ -36,7 +34,7 @@ theorem descPochhammer_eval_nat_eq_descFactorial (n k : ℕ) :
 theorem WithTopInt.add_one_le_iff (x : ℤ) (y : WithTop ℤ) : x + 1 ≤ y ↔ x < y := by
   by_cases hy : y = ⊤
   · simp_rw [hy, WithTop.coe_lt_top, le_top]
-  · obtain ⟨_, hz⟩ := WithTop.ne_top_iff_exists.mp hy
+  · obtain ⟨z, hz⟩ := WithTop.ne_top_iff_exists.mp hy
     rw [← hz, WithTop.coe_lt_coe, ← WithTop.coe_one, ← WithTop.coe_add, WithTop.coe_le_coe]
     exact Int.add_one_le_iff
 
@@ -50,9 +48,6 @@ theorem WithTopInt.le_add_one (x : ℤ) :
 --------------------------------------------------------------------------------------------------------------------------------
 
 variable {p : ℕ} [hp : Fact (Nat.Prime p)]
-
-theorem padicNormE.norm_nat_le_pow_iff_dvd (k n : ℕ) :
-    ‖(k : ℚ_[p])‖ ≤ (p : ℝ) ^ (-(n : ℤ)) ↔ (p ^ n : ℤ) ∣ k := padicNormE.norm_int_le_pow_iff_dvd _ _
 
 @[simp] theorem Padic.addValuation_lt_addValuation (x : ℚ_[p]) (y : ℚ_[p]) :
     Padic.addValuation y < Padic.addValuation x ↔ ‖x‖ < ‖y‖ := by
@@ -82,18 +77,16 @@ theorem padicNormE.norm_nat_le_pow_iff_dvd (k n : ℕ) :
 @[simp] theorem Padic.addValuation_le_addValuation (x : ℚ_[p]) (y : ℚ_[p]) :
     Padic.addValuation y ≤ Padic.addValuation x ↔ ‖x‖ ≤ ‖y‖ := by
   by_cases hx : x = 0
-  · rw [hx]
-    simp only [norm_zero, norm_nonneg, _root_.AddValuation.map_zero, le_top]
+  · simp_rw [hx, norm_zero, norm_nonneg, _root_.AddValuation.map_zero, le_top]
   · rw [← ne_eq] at hx
     by_cases hy : y = 0
-    · repeat rw [hy]
-      simp only [norm_zero, norm_le_zero_iff, _root_.AddValuation.map_zero, top_le_iff, AddValuation.top_iff]
+    · simp_rw [hy, norm_zero, norm_le_zero_iff, _root_.AddValuation.map_zero, top_le_iff, AddValuation.top_iff]
     · rw [← ne_eq] at hy
       rw [Padic.norm_eq_pow_val hx, Padic.norm_eq_pow_val hy, Padic.addValuation.apply hx, Padic.addValuation.apply hy]
-      simp only [← Real.rpow_intCast]
+      simp_rw [← Real.rpow_intCast]
       rw [Real.rpow_le_rpow_left_iff]
-      simp only [Int.cast_neg, neg_lt_neg_iff, neg_le_neg_iff, Int.cast_le, WithTop.coe_le_coe]
-      · simp only [Nat.one_lt_cast]
+      simp_rw [Int.cast_neg, neg_le_neg_iff, Int.cast_le, WithTop.coe_le_coe]
+      · rw [Nat.one_lt_cast]
         exact hp.out.one_lt
 
 @[simp] theorem Padic.lt_addValuation (x : ℚ_[p]) (m : ℤ) :
@@ -127,20 +120,18 @@ theorem padicNormE.norm_nat_le_pow_iff_dvd (k n : ℕ) :
     simp only [norm_zero, zpow_neg, inv_nonneg, le_top, iff_true]
     have h : 0 ≤ (p : ℝ)^(m : ℝ) := by
       apply Real.rpow_nonneg
-      simp only [Nat.cast_nonneg]
-    simp only [Real.rpow_intCast] at h
-    simp only [true_iff, ge_iff_le]
+      simp_rw [Nat.cast_nonneg]
+    rw [Real.rpow_intCast] at h
+    simp_rw [true_iff, ge_iff_le]
     exact h
   · rw [← ne_eq] at hx
-    rw [Padic.norm_eq_pow_val, Padic.addValuation.apply, WithTop.coe_le_coe]
-    simp only [← Real.rpow_intCast]
+    rw [Padic.norm_eq_pow_val hx, Padic.addValuation.apply hx, WithTop.coe_le_coe]
+    simp_rw [← Real.rpow_intCast]
     rw [Real.rpow_le_rpow_left_iff]
-    simp only [Int.cast_neg, neg_le_neg_iff]
+    simp_rw [Int.cast_neg, neg_le_neg_iff]
     rw [Int.cast_le]
-    · simp only [Nat.one_lt_cast]
+    · rw [Nat.one_lt_cast]
       exact hp.out.one_lt
-    · exact hx
-    · exact hx
 
 @[simp] theorem Padic.addValuation_le (x : ℚ_[p]) (m : ℤ) :
     Padic.addValuation x ≤ m ↔ (p : ℝ)^(-m) ≤ ‖x‖ := by
@@ -176,6 +167,7 @@ theorem padicNormE.norm_nat_le_pow_iff_dvd (k n : ℕ) :
   exact Padic.le_addValuation _ _
 
 --------------------------------------------------------------------------------------------------
+
 
 theorem Padic.tendsto_atTop_norm_lt_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
     (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ‖s n - L‖ < (p : ℝ)^(-(m : ℤ)) := by
@@ -217,6 +209,8 @@ theorem Padic.tendsto_atTop_norm_le_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
     (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ‖s n - L‖ ≤ (p : ℝ)^(-(m : ℤ)) := by
   simp_rw [Padic.tendsto_atTop_addValuation_le, Padic.le_addValuation_iff_norm_le_pow_neg']
 
+----------------------------------------------------------------------------------------
+
 theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
     UniformContinuous f ↔ ∀ s : ℕ, ∃ t : ℕ, ∀ b a : ℤ_[p], ‖a - b‖ < p^(-(t : ℤ)) → ‖f a - f b‖ < p^(-(s : ℤ)) := by
   simp only [Metric.uniformContinuous_iff, dist_eq_norm_sub]
@@ -224,28 +218,21 @@ theorem Padic.uniformContinuous_iff_norm_lt_pow (f : ℤ_[p] → ℚ_[p]) :
   · intro Hε s
     specialize Hε ((p : ℝ)^(-(s : ℤ)))
     obtain ⟨δ, hδ, Hδ⟩ := by
-      apply Hε
-      apply zpow_pos
+      apply Hε _
+      apply (zpow_pos _)
       exact Nat.cast_pos.mpr hp.out.pos
     obtain ⟨t, ht⟩ := PadicInt.exists_pow_neg_lt p hδ
     use t
     intro b a ha
-    have ha : ‖a - b‖ < δ := by
-      apply lt_of_lt_of_le ha
-      exact le_of_lt ht
-    exact Hδ ha
+    exact Hδ (lt_of_lt_of_le ha (le_of_lt ht))
   · intro Hs ε hε
     obtain ⟨s, hs⟩ := PadicInt.exists_pow_neg_lt p hε
     specialize Hs s
     obtain ⟨t, ht⟩ := Hs
     use ((p : ℝ)^(-(t : ℤ)))
-    apply And.intro
-    · apply zpow_pos
-      exact Nat.cast_pos.mpr hp.out.pos
-    · intro a b ha
-      apply lt_of_lt_of_le _ (le_of_lt hs)
-      apply ht
-      exact ha
+    apply And.intro (zpow_pos (Nat.cast_pos.mpr hp.out.pos) _)
+    intro _ _ ha
+    exact lt_of_lt_of_le (ht _ _ ha) (le_of_lt hs)
 
 theorem Padic.uniformContinuous_iff_addValuation_lt (f : ℤ_[p] → ℚ_[p]) :
     UniformContinuous f ↔ ∀ s : ℕ, ∃ t : ℕ, ∀ b a : ℤ_[p], t < Padic.addValuation (a - b : ℚ_[p]) → s < Padic.addValuation (f a - f b) := by
