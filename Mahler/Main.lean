@@ -297,41 +297,57 @@ theorem PadicInt.norm_descPochhammer_le (k : ℕ) (x : ℤ_[p]) :
       rw [← ascPochhammer_eval_neg_eq_descPochhammer]
     _ ≤ _ := norm_ascPochhammer_le _ _
 
+
+theorem tsum_sub_sum {α : Type*} [AddCommGroup α] [TopologicalSpace α] (n : ℕ) {f : ℕ → α} (h : Summable f) :
+    ∑' k : ℕ, f k - ∑ k ∈ Finset.range n, f k = ∑' k : ℕ, f (k + n) := by
+  sorry
+
+theorem IsUltrametricDist.norm_tsum_le_iff {α β : Type*} {f : α → β} [AddCommMonoid β] [TopologicalSpace β] [Norm β] (ε : ℝ) (h : Summable f) :
+    ‖∑' k : α, f k‖ < ε ↔ ∀ k : α, ‖f k‖ < ε  := by
+  sorry
+
 theorem my_mahler (f : C(ℤ_[p], ℚ_[p])) :
     f = fun (x : ℤ_[p]) ↦ ∑' k : ℕ, δ_[1]^[k] f 0 / (k.factorial : ℚ_[p]) * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast (ContinuousMap.continuous f)
   · have : TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
       have h := PadicInt.fwdDiff_tendsto_zero 1 f
       simp_rw [Metric.tendsto_atTop, dist_eq_norm_sub, sub_zero] at h
-
       rw [Metric.tendstoUniformly_iff]
       intro ε hε
       specialize h ε hε
       obtain ⟨N, hN⟩ := h
-
       simp_rw [Filter.eventually_atTop, ge_iff_le, dist_eq_norm_sub]
       use N
       intro n hn x
-      have : ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k)) - ∑ k ∈ Finset.range (n + 1), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k)) = ∑' (k : ℕ), δ_[1]^[k + n + 1] f 0 / (k + n + 1).factorial * (Polynomial.eval x (descPochhammer ℤ_[p] (k + n + 1))) := by
-        sorry
-      rw [this]
-      have : ‖∑' (k : ℕ), δ_[1]^[k + n + 1] (⇑f) 0 / ↑(k + n + 1).factorial * ↑(Polynomial.eval x (descPochhammer ℤ_[p] (k + n + 1)))‖ < ε ↔ ∀ (k : ℕ), ‖δ_[1]^[k + n + 1] f 0 / (k + n + 1).factorial * (Polynomial.eval x (descPochhammer ℤ_[p] (k + n + 1)))‖ < ε := by
-        sorry
-      rw [this]
+      have hf : Summable fun k ↦ δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k)) := by
+        rw [NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero, Nat.cofinite_eq_atTop]
+        simp_rw [div_mul_comm]
+        have h := PadicInt.fwdDiff_tendsto_zero 1 f
+        simp_rw [NormedAddCommGroup.tendsto_atTop', sub_zero] at *
+        intro ε hε
+        specialize h ε hε
+        obtain ⟨N, hN⟩ := h
+        use N
+        intro n hn
+        rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt]
+        calc
+          _ ≤ ‖δ_[1]^[n] f 0‖ := by
+            exact mul_le_of_le_one_left (norm_nonneg _) ((div_le_one (norm_pos_iff.mpr (Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)))).mpr (PadicInt.norm_descPochhammer_le _ _))
+          _ < _ := hN _ hn
+      have hf' : Summable fun k ↦ δ_[1]^[k + (n + 1)] f 0 / (k + (n + 1)).factorial * (Polynomial.eval x (descPochhammer ℤ_[p] (k + (n + 1)))) := by
+        have : (fun k ↦ δ_[1]^[k + (n + 1)] f 0 / (k + (n + 1)).factorial * (Polynomial.eval x (descPochhammer ℤ_[p] (k + (n + 1))))) = (fun k ↦ δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) ∘ (fun k ↦ k + (n + 1)) := by
+          exact rfl
+        rw [this]
+        exact Summable.comp_injective hf (add_left_injective _)
+      rw [tsum_sub_sum _ hf, IsUltrametricDist.norm_tsum_le_iff _ hf']
       intro k
+      rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
       calc
         _ ≤ ‖δ_[1]^[k + n + 1] f 0‖ := by
-          simp_rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
           exact mul_le_of_le_one_left (norm_nonneg _) ((div_le_one (norm_pos_iff.mpr (Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)))).mpr (PadicInt.norm_descPochhammer_le _ _))
-        _ < ε := by
+        _ < _ := by
           apply hN _
           omega
-      /-
-        theorem stupid : NonarchimedeanAddGroup ℤ_[p] := by
-          exact IsUltrametricDist.nonarchimedeanAddGroup
-
-        apply NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero
-      -/
     apply TendstoUniformly.continuous this
     · simp only [Filter.eventually_atTop, ge_iff_le]
       use 0
