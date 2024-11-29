@@ -5,76 +5,72 @@ Authors: Giulio Caflisch, David Loeffler
 import Mathlib.Analysis.Normed.Group.Ultra
 import Mathlib.Topology.ContinuousMap.Compact
 
-variable {G M : Type*} [AddCommMonoid M] [AddCommGroup G]
-variable {S : Type*} [Semiring S] [Module S G]
+variable {G M : Type*} [AddCommMonoid M] [AddCommGroup G] (h : M)
 
-def fwdDiff (h : M) (f : M → G) : M → G :=
+def fwdDiff (f : M → G) : M → G :=
   fun x ↦ f (x + h) - f x
 
 notation "δ_["h"]" => fwdDiff h
 
-syntax "rw_repeat_no_binders" term : tactic
-
-@[simp] theorem fwdDiff_const (h : M) (k : G) :
+@[simp] theorem fwdDiff_const (k : G) :
     δ_[h] (fun _ ↦ k) = (fun _ ↦ 0) := by
   ext x
   rw [fwdDiff]
   abel
 
+/-! This should be generalized for `M` submonoid of `G` and the inclusion map -/
 @[simp] theorem fwdDiff_id (h : G) :
     δ_[h] id = (fun _ ↦ h) := by
   ext x
   simp_rw [fwdDiff, id_eq, add_sub_cancel_left]
 
-@[simp] theorem fwdDiff_add (h : M) (f g : M → G) :
+@[simp] theorem fwdDiff_add (f g : M → G) :
     δ_[h] (f + g) = δ_[h] f + δ_[h] g := by
   ext x
   simp_rw [Pi.add_apply, fwdDiff, Pi.add_apply]
   abel
 
-@[simp] theorem fwdDiff_sub (h : M) (f g : M → G) :
+@[simp] theorem fwdDiff_sub (f g : M → G) :
     δ_[h] (f - g) = δ_[h] f - δ_[h] g := by
   ext x
   simp only [fwdDiff, Pi.sub_apply]
   abel
 
-@[simp] theorem fwdDiff_const_smul (h : M) (f : M → G) (r : S) :
+@[simp] theorem fwdDiff_const_smul {S : Type*} [Semiring S] [Module S G] (r : S) (f : M → G) :
     δ_[h] (r • f) = r • δ_[h] f := by
   ext x
   simp only [fwdDiff, Pi.smul_apply, smul_sub]
 
-@[simp] theorem fwdDiff_finset_sum (h : M) {α : Type*} (s : Finset α) (f : α → M → G) :
+@[simp] theorem fwdDiff_finset_sum {α : Type*} (s : Finset α) (f : α → M → G) :
     δ_[h] (∑ k ∈ s, f k) = ∑ k ∈ s, δ_[h] (f k) := by
   ext x
   simp only [fwdDiff, Finset.sum_apply, Finset.sum_sub_distrib]
 
-variable {R : Type*} [Ring R] [Module R G]
-@[simp] theorem fwdDiff_smul (h : M) (f : M → R) (g : M → G):
+@[simp] theorem fwdDiff_smul {R : Type*} [Ring R] [Module R G] (f : M → R) (g : M → G):
     δ_[h] (f • g) = δ_[h] f • g + f • δ_[h] g + δ_[h] f • δ_[h] g := by
   ext x
   simp only [fwdDiff, Pi.add_apply, Pi.smul_apply', sub_smul, smul_sub]
   abel
 
-variable {F : Type*} [Field F]
-@[simp] theorem fwdDiff_div (h : M) (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + h) ≠ 0) :
+@[simp] theorem fwdDiff_div {F : Type*} [Field F] (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + h) ≠ 0) :
     δ_[h] (f / g) x = ((δ_[h] f * g - f * δ_[h] g) / (g * (g + δ_[h] g))) x := by
   simp only [fwdDiff, Pi.div_apply, Pi.sub_apply, Pi.mul_apply, Pi.add_apply,
     div_sub_div _ _ hx' hx, add_sub_cancel, div_eq_div_iff (mul_ne_zero hx' hx) (mul_ne_zero hx hx')]
   ring
 
-@[simp] theorem fwdDiff_iter_const_zero (h : M) (n : ℕ) :
+@[simp] theorem fwdDiff_iter_const_zero (n : ℕ) :
     δ_[h]^[n]  (fun (_ : M) ↦ (0 : G)) = (fun (_ : M) ↦ (0 : G)) := by
   induction' n with n hn
   · rw [Function.iterate_zero_apply]
   · rw [Function.iterate_succ_apply', hn, fwdDiff_const]
 
-@[simp] theorem fwdDiff_iter_add  (h : M) (n : ℕ) (f g : M → G) :
+@[simp] theorem fwdDiff_iter_add (f g : M → G) (n : ℕ) :
     δ_[h]^[n] (f + g) = δ_[h]^[n] f + δ_[h]^[n] g := by
   induction' n with n hn
   · simp_rw [Function.iterate_zero_apply]
   · simp_rw [Function.iterate_succ_apply', hn, fwdDiff_add]
 
-@[simp] theorem fwdDiff_iter_const_smul (h : M) (n : ℕ) (f : M → G) (r : S) :
+@[simp] theorem fwdDiff_iter_const_smul {S : Type*} [Semiring S] [Module S G] (r : S) (f : M → G) (n : ℕ) :
     δ_[h]^[n] (r • f) = r • δ_[h]^[n] f := by
   induction' n with n hn
   · simp_rw [Function.iterate_zero_apply]
@@ -82,7 +78,7 @@ variable {F : Type*} [Field F]
 
 --------------------------------------------------------------------
 
-theorem shift_eq_sum_fwdDiff_iter (h : M) (f : M → G) (n : ℕ) (y : M) :
+theorem shift_eq_sum_fwdDiff_iter (f : M → G) (n : ℕ) (y : M) :
     f (y + n • h) = ∑ k ∈ Finset.range (n + 1), n.choose k • δ_[h]^[k] f y := by
   revert y
   induction' n with n hn
@@ -99,7 +95,7 @@ theorem shift_eq_sum_fwdDiff_iter (h : M) (f : M → G) (n : ℕ) (y : M) :
       ← hn y, ← hn (y + h), sub_add_cancel]
     simp only [add_comm, ← add_assoc]
 
-theorem fwdDiff_iter_eq_sum_shift (h : M) (n : ℕ) (f : M → G) (x : M) :
+theorem fwdDiff_iter_eq_sum_shift (f : M → G) (n : ℕ) (x : M) :
     δ_[h]^[n] f x = ∑ k ∈ Finset.range (n + 1), ( (-1 : ℤ)^(n - k) * (n.choose k) ) • f (x + k • h) := by
   revert x
   induction' n with n hn
