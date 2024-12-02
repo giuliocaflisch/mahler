@@ -12,6 +12,8 @@ def fwdDiff (f : M → G) : M → G :=
 
 notation "δ_["h"]" => fwdDiff h
 
+/-! Unapplied versions -/
+
 @[simp] theorem fwdDiff_const (k : G) :
     δ_[h] (fun _ ↦ k) = (fun _ ↦ 0) := by
   ext x
@@ -52,12 +54,6 @@ notation "δ_["h"]" => fwdDiff h
   simp only [fwdDiff, Pi.add_apply, Pi.smul_apply', sub_smul, smul_sub]
   abel
 
-@[simp] theorem fwdDiff_div {F : Type*} [Field F] (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + h) ≠ 0) :
-    δ_[h] (f / g) x = ((δ_[h] f * g - f * δ_[h] g) / (g * (g + δ_[h] g))) x := by
-  simp only [fwdDiff, Pi.div_apply, Pi.sub_apply, Pi.mul_apply, Pi.add_apply,
-    div_sub_div _ _ hx' hx, add_sub_cancel, div_eq_div_iff (mul_ne_zero hx' hx) (mul_ne_zero hx hx')]
-  ring
-
 @[simp] theorem fwdDiff_iter_const_zero (n : ℕ) :
     δ_[h]^[n]  (fun (_ : M) ↦ (0 : G)) = (fun (_ : M) ↦ (0 : G)) := by
   induction' n with n hn
@@ -76,6 +72,16 @@ notation "δ_["h"]" => fwdDiff h
   · simp_rw [Function.iterate_zero_apply]
   · simp_rw [Function.iterate_succ_apply', hn, fwdDiff_const_smul]
 
+/-! Applied that were needed originally -/
+
+@[simp] theorem fwdDiff_const_smul_apply {S : Type*} [Semiring S] [Module S G] (r : S) (f : M → G) (x : M) :
+    δ_[h] (r • f) x = r • δ_[h] f x := by
+  rw [fwdDiff_const_smul, Pi.smul_apply]
+
+@[simp] theorem fwdDiff_finset_sum_apply {α : Type*} (s : Finset α) (f : α → M → G) (x : M) :
+    δ_[h] (∑ k ∈ s, f k) x = ∑ k ∈ s, δ_[h] (f k) x := by
+  rw [fwdDiff_finset_sum, Finset.sum_apply]
+
 --------------------------------------------------------------------
 
 theorem shift_eq_sum_fwdDiff_iter (f : M → G) (n : ℕ) (y : M) :
@@ -83,16 +89,16 @@ theorem shift_eq_sum_fwdDiff_iter (f : M → G) (n : ℕ) (y : M) :
   revert y
   induction' n with n hn
   · simp_rw [zero_smul, add_zero, zero_add, Finset.sum_range_one, Nat.choose_self,
-      Function.iterate_zero_apply, one_smul, implies_true]
+      one_smul,Function.iterate_zero_apply, implies_true]
   · intro y
     rw [Finset.sum_range_succ', Nat.choose_zero_right]
     nth_rw 6 [← Nat.choose_zero_right n]
     simp_rw [Nat.choose_succ_succ', add_smul, Finset.sum_add_distrib, one_smul, add_assoc]
     nth_rw 2 [Finset.sum_range_succ]
-    rw [Nat.choose_succ_self, zero_smul, add_zero,
-      ← Finset.sum_range_succ' (fun x ↦ n.choose x • δ_[h]^[x] f y) _, ← hn y]
-    simp_rw [Function.iterate_succ_apply', fwdDiff, smul_sub, Finset.sum_sub_distrib,
-      ← hn y, ← hn (y + h), sub_add_cancel]
+    simp_rw [Nat.choose_succ_self, zero_smul, add_zero,
+      ← Finset.sum_range_succ' (fun x ↦ n.choose x • δ_[h]^[x] f y) _, ← hn y, Function.iterate_succ_apply',
+      -- ← fwdDiff_const_smul_apply, ← fwdDiff_finset_sum_apply, ← funext hn]
+      fwdDiff, smul_sub, Finset.sum_sub_distrib, ← hn, sub_add_cancel]
     simp only [add_comm, ← add_assoc]
 
 theorem fwdDiff_iter_eq_sum_shift (f : M → G) (n : ℕ) (x : M) :
@@ -107,11 +113,10 @@ theorem fwdDiff_iter_eq_sum_shift (f : M → G) (n : ℕ) (x : M) :
     simp_rw [add_tsub_add_eq_tsub_right, Nat.choose_succ_succ', Nat.cast_add, mul_add, add_smul,
       Finset.sum_add_distrib, one_smul, sub_eq_add_neg]
     rw [hn]
-    simp_rw [add_assoc, add_comm, add_right_inj]
-    rw [Finset.sum_range_succ, Nat.choose_succ_self, Int.ofNat_zero, Int.mul_zero, zero_smul,
-      add_zero, hn, Finset.sum_range_succ', zero_smul, add_zero, tsub_zero, Nat.choose_zero_right,
-      Nat.cast_one, mul_one, neg_add_rev, Int.pow_succ', neg_one_mul, neg_smul, add_right_inj,
-      ← Finset.sum_neg_distrib]
+    simp_rw [add_assoc, add_comm, add_right_inj, Finset.sum_range_succ, Nat.choose_succ_self,
+      Int.ofNat_zero, Int.mul_zero, zero_smul, add_zero, hn, Finset.sum_range_succ', zero_smul,
+      add_zero, tsub_zero, Nat.choose_zero_right, Nat.cast_one, mul_one, neg_add_rev, Int.pow_succ',
+      neg_one_mul, neg_smul, add_right_inj, ← Finset.sum_neg_distrib]
     apply Finset.sum_congr rfl
     intro x hx
     rw [Finset.mem_range] at hx
@@ -127,7 +132,5 @@ theorem IsUltrametricDist.norm_fwdDiff_iter_apply_le {M G : Type*} [TopologicalS
   apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty (Finset.nonempty_range_iff.mpr (Nat.add_one_ne_zero _))
   intro _ _
   calc
-    _ ≤ ‖f (m + _ • h)‖ := by
-      apply norm_zsmul_le
-    _ ≤ _ := by
-      apply ContinuousMap.norm_coe_le_norm
+    _ ≤ _ := norm_zsmul_le _ _
+    _ ≤ _ := ContinuousMap.norm_coe_le_norm _ _

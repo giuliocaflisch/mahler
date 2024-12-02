@@ -58,12 +58,13 @@ variable {p : ℕ} [hp : Fact (Nat.Prime p)]
     simp only [norm_zero, norm_pos_iff, _root_.AddValuation.map_zero]
     apply Iff.intro
     · intro hy
-      by_contra! hy'
-      simp_rw [hy', _root_.AddValuation.map_zero, lt_self_iff_false] at hy
+      by_contra!
+      rw [this, _root_.AddValuation.map_zero, lt_self_iff_false] at hy
+      exact hy
     · intro hy
-      by_contra hy'
-      simp_rw [not_lt, top_le_iff, AddValuation.top_iff] at hy'
-      exact hy hy'
+      by_contra!
+      simp_rw [top_le_iff, AddValuation.top_iff] at this
+      exact hy this
   · rw [← ne_eq] at hx
     by_cases hy : y = 0
     · simp_rw [hy, _root_.AddValuation.map_zero, not_top_lt, norm_zero, false_iff, not_lt,
@@ -125,55 +126,6 @@ variable {p : ℕ} [hp : Fact (Nat.Prime p)]
 @[simp] theorem Padic.eq_addValuation_iff_norm_eq_pow_neg (x : ℚ_[p]) (m : ℤ) :
     m = Padic.addValuation x ↔ ‖x‖ = (p : ℝ)^(-m) := by
   simp only [le_antisymm_iff, Padic.le_addValuation, zpow_neg, Padic.addValuation_le]
-
---------------------------------------------------------------------------------------------------
-
-theorem Padic.tendsto_atTop_norm_le_pow (s : ℕ → ℚ_[p]) (L : ℚ_[p]):
-    (Filter.Tendsto s Filter.atTop (nhds L)) ↔ ∀ m : ℕ, ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ‖s n - L‖ ≤ (p : ℝ)^(-m : ℤ) := by
-  simp_rw [Metric.tendsto_atTop, dist_eq_norm_sub]
-  apply Iff.intro
-  · intro Hε m
-    specialize Hε ((p : ℝ)^(-m -1 : ℤ)) (zpow_pos (Nat.cast_pos.mpr hp.out.pos) _)
-    obtain ⟨N, hN⟩ := Hε
-    use N
-    intro n hn
-    specialize hN n hn
-    calc
-      _ ≤ (p : ℝ) ^ (-m -1 : ℤ) := le_of_lt hN
-      _ ≤ _ := (zpow_le_zpow_iff_right₀ (Nat.one_lt_cast.mpr hp.out.one_lt)).mpr (Int.sub_le_self _ zero_le_one)
-  · intro Hm ε hε
-    obtain ⟨m, hm⟩ := PadicInt.exists_pow_neg_lt p hε
-    obtain ⟨N, hN⟩ := Hm m
-    use N
-    intro n hn
-    specialize hN n hn
-    calc
-      _ ≤ (p : ℝ)^(-m : ℤ) := hN
-      _ < _ := hm
-
-theorem Padic.uniformContinuous_then_nonzero_norm_le_pow {f : ℤ_[p] → ℚ_[p]} :
-    UniformContinuous f → ∀ s : ℕ, ∃ t : ℕ, t ≠ 0 ∧ ∀ b a : ℤ_[p], ‖a - b‖ ≤ p^(-t : ℤ) → ‖f a - f b‖ ≤ p^(-s : ℤ) := by
-  simp_rw [Metric.uniformContinuous_iff, dist_eq_norm_sub]
-  intro hf s
-  specialize hf ((p : ℝ)^(-s : ℤ)) (zpow_pos (Nat.cast_pos.mpr hp.out.pos) _)
-  obtain ⟨δ, ⟨hδ, hf⟩⟩ := hf
-  obtain ⟨t, ht⟩ := (PadicInt.exists_pow_neg_lt p hδ)
-  use t + 1
-  apply And.intro (Nat.add_one_ne_zero _)
-  intro a b
-  specialize @hf b a
-  intro hab
-  have : ‖b - a‖ < δ := by
-    calc
-      _ ≤ _ := hab
-      _ < _ := by
-        simp_rw [Nat.cast_add, Nat.cast_one, neg_add]
-        rw [zpow_add₀]
-        · apply mul_lt_of_lt_of_le_one_of_nonneg ht (zpow_le_one_of_nonpos₀ (Nat.one_le_cast.mpr hp.out.one_le) (Left.neg_nonpos_iff.mpr Int.one_nonneg))
-          simp only [zpow_neg, zpow_natCast, inv_nonneg, Nat.cast_nonneg, pow_nonneg]
-        · simp_rw [ne_eq, Nat.cast_eq_zero, ← ne_eq]
-          exact hp.out.ne_zero
-  exact le_of_lt (hf this)
 
 --------------------------------------------------------------------------------------------------------------------------------
 
