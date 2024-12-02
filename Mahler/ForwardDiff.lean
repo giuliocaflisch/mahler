@@ -131,6 +131,4 @@ theorem IsUltrametricDist.norm_fwdDiff_iter_apply_le {M G : Type*} [TopologicalS
   rw [fwdDiff_iter_eq_sum_shift]
   apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonempty (Finset.nonempty_range_iff.mpr (Nat.add_one_ne_zero _))
   intro _ _
-  calc
-    _ ≤ _ := norm_zsmul_le _ _
-    _ ≤ _ := ContinuousMap.norm_coe_le_norm _ _
+  exact le_trans (norm_zsmul_le _ _) (ContinuousMap.norm_coe_le_norm _ _)
