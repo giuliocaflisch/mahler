@@ -21,18 +21,6 @@ theorem ContinuousMap.exists_norm_eq_norm_apply
 
 --------------------------------------------------------------------------------------------------------------------------------
 
-theorem descPochhammer_eval_nat_eq_descFactorial (n k : ℕ) :
-    (descPochhammer ℤ k).eval (Int.ofNat n) = n.descFactorial k := by
-  induction' k with k hk
-  · simp_rw [descPochhammer_zero, Polynomial.eval_one, Nat.descFactorial_zero, Nat.cast_one]
-  · simp_rw [descPochhammer_succ_eval, hk, Int.ofNat_eq_coe, Nat.descFactorial_succ, Nat.cast_mul]
-    by_cases h : n < k
-    · rw [Nat.descFactorial_of_lt h, CharP.cast_eq_zero, zero_mul, mul_zero]
-    · rw [not_lt] at h
-      simp_rw [mul_comm, mul_eq_mul_right_iff, Int.ofNat_sub h, true_or]
-
---------------------------------------------------------------------------------------------------------------------------------
-
 theorem WithTop.add_one_le_iff
   {α : Type*} [Preorder α] [Add α] [One α] [SuccAddOrder α] [NoMaxOrder α] (x : α) (y : WithTop α) :
     x + 1 ≤ y ↔ x < y := by
