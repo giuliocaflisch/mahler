@@ -79,11 +79,11 @@ private theorem bojanic_10 (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) (t : ℕ):
 private theorem bojanic_11 (f : C(ℤ_[p], ℚ_[p])) :
     ∀ s : ℕ, ∃ (t : ℕ) (ht : t ≠ 0), ∀ n : ℕ, ‖δ_[1]^[p ^ t + n] f 0‖ ≤ max (Finset.sup' (Finset.range (p^t - 1)) (Finset.nonempty_range_iff.mpr (Nat.sub_ne_zero_of_lt (Nat.one_lt_pow ht hp.out.one_lt))) (fun j : ℕ ↦ (p : ℝ)^(-1 : ℤ) * ‖δ_[1]^[j + 1 + n] f 0‖)) ((p : ℝ)^(-s : ℤ)) := by
   intro s
-  obtain ⟨t, ⟨ht', ht⟩⟩ := bojanic_8 f s
+  obtain ⟨t, ⟨ht, ht'⟩⟩ := bojanic_8 f s
   use t
-  use ht'
+  use ht
   intro n
-  have hpt : p^t - 1 ≠ 0 := Nat.sub_ne_zero_of_lt (lt_of_lt_of_le (Nat.one_lt_pow ht' Nat.one_lt_two) (Nat.pow_le_pow_of_le_left hp.out.two_le _))
+  have hpt : p^t - 1 ≠ 0 := Nat.sub_ne_zero_of_lt (lt_of_lt_of_le (Nat.one_lt_pow ht Nat.one_lt_two) (Nat.pow_le_pow_of_le_left hp.out.two_le _))
   have hpt' : Finset.Nonempty (Finset.range (p^t - 1)) := Finset.nonempty_range_iff.mpr hpt
   have hn' : Finset.Nonempty (Finset.range (n + 1)) := Finset.nonempty_range_succ
   calc
@@ -109,9 +109,7 @@ private theorem bojanic_11 (f : C(ℤ_[p], ℚ_[p])) :
       simp_rw [Finset.sup'_le_iff]
       intro a _
       calc
-        _ ≤ 1 * ‖f (p ^ t + a) - f a‖ := by
-          apply mul_le_mul_of_nonneg_right (padicNormE.norm_int_le_one _)
-          simp_rw [norm_nonneg]
+        _ ≤ _ := mul_le_mul_of_nonneg_right (padicNormE.norm_int_le_one _) (norm_nonneg _)
         _ ≤ _ := by
           rw [one_mul, Finset.le_sup'_iff]
           use a
@@ -134,9 +132,9 @@ private theorem bojanic_11 (f : C(ℤ_[p], ℚ_[p])) :
       · rw [Finset.sup'_le_iff]
         intro _ _
         rw [add_comm]
-        exact ht _
+        exact ht' _
 
-theorem bojanic_12 (f : C(ℤ_[p], ℚ_[p])) {y : ℤ_[p]} (hy' : ‖f y‖ = ‖f‖)
+private theorem bojanic_12 (f : C(ℤ_[p], ℚ_[p])) {y : ℤ_[p]} (hy' : ‖f y‖ = ‖f‖)
   (hb : Padic.addValuation (f y) = (0 : ℤ)) (s : ℕ) :
     ∃ t, ∀ j ≤ s, ∀ (n : ℕ), j * p ^ t ≤ n → ‖δ_[1]^[n] (⇑f) 0‖ ≤ ↑p ^ (-j : ℤ) := by
   obtain ⟨t, ⟨ht', ht⟩⟩ := bojanic_11 f s
@@ -247,7 +245,7 @@ theorem PadicInt.fwdDiff_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-private theorem mahler_series_on_nat (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
+theorem mahler_series_on_nat (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
     f n = ∑' k : ℕ, δ_[1]^[k] f 0 / k.factorial * (descPochhammer ℤ_[p] k).eval (n : ℤ_[p]) := by
   simp_rw [descPochhammer_eval_eq_descFactorial, PadicInt.coe_natCast, div_mul_comm]
   have (n : ℕ) : n = ((n : ℚ) : ℚ_[p]) := by
@@ -270,64 +268,70 @@ private theorem mahler_series_on_nat (f : C(ℤ_[p], ℚ_[p])) (n : ℕ) :
 theorem tsum_sub_sum_nat {G : Type*} [AddCommGroup G] [TopologicalSpace G] [TopologicalAddGroup G] [T2Space G] (n : ℕ) {f : ℕ → G} (h : Summable f) :
     ∑' k : ℕ, f k - ∑ k ∈ Finset.range n, f k = ∑' k : ℕ, f (k + n) := sub_eq_of_eq_add' (Eq.symm (sum_add_tsum_nat_add n h))
 
-theorem mahler_series (f : C(ℤ_[p], ℚ_[p])) :
+theorem mahler_partial_sums_tendstoUniformly_mahler_series (f : C(ℤ_[p], ℚ_[p])) :
+    TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
+  have h := PadicInt.fwdDiff_tendsto_zero f
+  simp_rw [Metric.tendsto_atTop, dist_eq_norm_sub, sub_zero] at h
+  rw [Metric.tendstoUniformly_iff]
+  intro ε hε
+  obtain ⟨N, hN⟩ := h (ε/2) (half_pos hε)
+  simp_rw [Filter.eventually_atTop, ge_iff_le, dist_eq_norm_sub]
+  use N
+  intro n hn x
+  have hf : Summable fun k ↦ δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k)) := by
+    rw [NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero, Nat.cofinite_eq_atTop]
+    simp_rw [div_mul_comm]
+    have h := PadicInt.fwdDiff_tendsto_zero f
+    simp_rw [NormedAddCommGroup.tendsto_atTop', sub_zero] at *
+    intro ε hε
+    obtain ⟨N, hN⟩ := h ε hε
+    use N
+    intro n hn
+    rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt]
+    calc
+      _ ≤ _ := mul_le_of_le_one_left (norm_nonneg _) ((div_le_one (norm_pos_iff.mpr (Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)))).mpr (PadicInt.norm_descPochhammer_le _ _))
+      _ < _ := hN _ hn
+  rw [tsum_sub_sum_nat _ hf]
+  calc
+    _ ≤ _ := IsUltrametricDist.norm_tsum_le _
+    _ ≤ ⨆ k, ‖δ_[1]^[k + (n + 1)] f 0‖ := by
+      apply Real.iSup_le
+      · intro i
+        calc
+          _ ≤ ‖δ_[1]^[i + (n + 1)] f 0‖ := by
+            rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
+            exact mul_le_of_le_one_left (norm_nonneg _) (div_le_one_of_le₀ (PadicInt.norm_descPochhammer_le _ _) (norm_nonneg _))
+          _ ≤ _ := by
+            apply le_ciSup_of_le _ i (le_refl _)
+            rw [BddAbove, Set.nonempty_def]
+            use ‖f‖
+            simp_rw [mem_upperBounds, Set.mem_range, forall_exists_index, forall_apply_eq_imp_iff]
+            intro _
+            exact IsUltrametricDist.norm_fwdDiff_iter_apply_le _ _ _ _
+      · apply Real.iSup_nonneg'
+        use 0
+        exact norm_nonneg _
+    _ ≤ _ := by
+      apply Real.iSup_le _ (div_nonneg (le_of_lt hε) zero_le_two)
+      intro i
+      apply le_of_lt
+      apply hN (i + (n + 1))
+      omega
+    _ < _ := half_lt_self hε
+
+theorem mahler_series_continuous (f : C(ℤ_[p], ℚ_[p])) :
+    Continuous fun x ↦ ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k)) := by
+  apply TendstoUniformly.continuous (mahler_partial_sums_tendstoUniformly_mahler_series _)
+  rw [Filter.eventually_atTop]
+  use 0
+  intro _ _
+  apply continuous_finset_sum (Finset.range _)
+  intro _ _
+  exact Continuous.mul continuous_const (Continuous.comp' (Continuous.subtype_val continuous_id') (Polynomial.continuous_eval₂ _ _))
+
+theorem mahler_series_eq_fun (f : C(ℤ_[p], ℚ_[p])) :
     f = fun x ↦ ∑' k : ℕ, δ_[1]^[k] f 0 / k.factorial * (descPochhammer ℤ_[p] k).eval x := by
   apply DenseRange.equalizer PadicInt.denseRange_natCast (ContinuousMap.continuous f)
-  · have : TendstoUniformly (fun n x ↦ ∑ k ∈ Finset.range (n + 1), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) (fun x ↦ ∑' (k : ℕ), δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k))) Filter.atTop := by
-      have h := PadicInt.fwdDiff_tendsto_zero f
-      simp_rw [Metric.tendsto_atTop, dist_eq_norm_sub, sub_zero] at h
-      rw [Metric.tendstoUniformly_iff]
-      intro ε hε
-      obtain ⟨N, hN⟩ := h (ε/2) (half_pos hε)
-      simp_rw [Filter.eventually_atTop, ge_iff_le, dist_eq_norm_sub]
-      use N
-      intro n hn x
-      have hf : Summable fun k ↦ δ_[1]^[k] f 0 / k.factorial * (Polynomial.eval x (descPochhammer ℤ_[p] k)) := by
-        rw [NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero, Nat.cofinite_eq_atTop]
-        simp_rw [div_mul_comm]
-        have h := PadicInt.fwdDiff_tendsto_zero f
-        simp_rw [NormedAddCommGroup.tendsto_atTop', sub_zero] at *
-        intro ε hε
-        obtain ⟨N, hN⟩ := h ε hε
-        use N
-        intro n hn
-        rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt]
-        calc
-          _ ≤ _ := mul_le_of_le_one_left (norm_nonneg _) ((div_le_one (norm_pos_iff.mpr (Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)))).mpr (PadicInt.norm_descPochhammer_le _ _))
-          _ < _ := hN _ hn
-      rw [tsum_sub_sum_nat _ hf]
-      calc
-        _ ≤ _ := IsUltrametricDist.norm_tsum_le _
-        _ ≤ ⨆ k, ‖δ_[1]^[k + (n + 1)] f 0‖ := by
-          apply Real.iSup_le
-          · intro i
-            calc
-              _ ≤ ‖δ_[1]^[i + (n + 1)] f 0‖ := by
-                rw [padicNormE.mul, norm_div, PadicInt.padic_norm_e_of_padicInt, div_mul_comm]
-                exact mul_le_of_le_one_left (norm_nonneg _) (div_le_one_of_le₀ (PadicInt.norm_descPochhammer_le _ _) (norm_nonneg _))
-              _ ≤ _ := by
-                apply le_ciSup_of_le _ i (le_refl _)
-                rw [BddAbove, Set.nonempty_def]
-                use ‖f‖
-                simp_rw [mem_upperBounds, Set.mem_range, forall_exists_index, forall_apply_eq_imp_iff]
-                intro _
-                exact IsUltrametricDist.norm_fwdDiff_iter_apply_le _ _ _ _
-          · apply Real.iSup_nonneg'
-            use 0
-            exact norm_nonneg _
-        _ ≤ _ := by
-          apply Real.iSup_le _ (div_nonneg (le_of_lt hε) zero_le_two)
-          intro i
-          apply le_of_lt
-          apply hN (i + (n + 1))
-          omega
-        _ < _ := half_lt_self hε
-    apply TendstoUniformly.continuous this
-    rw [Filter.eventually_atTop]
-    use 0
-    intro _ _
-    apply continuous_finset_sum (Finset.range _)
-    intro _ _
-    exact Continuous.mul continuous_const (Continuous.comp' (Continuous.subtype_val continuous_id') (Polynomial.continuous_eval₂ _ _))
+  · exact mahler_series_continuous _
   · ext _
     simp_rw [Function.comp_apply, mahler_series_on_nat]
