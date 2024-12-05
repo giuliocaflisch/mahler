@@ -54,7 +54,7 @@ notation "δ_["h"]" => fwdDiff h
   simp only [fwdDiff, Pi.add_apply, Pi.smul_apply', sub_smul, smul_sub]
   abel
 
-@[simp] theorem fwdDiff_div {F : Type*} [Field F] (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + h) ≠ 0) :
+@[simp] theorem fwdDiff_div_apply {F : Type*} [Field F] (f g : M → F) (x : M) (hx : g x ≠ 0) (hx' : g (x + h) ≠ 0) :
     δ_[h] (f / g) x = ((δ_[h] f * g - f * δ_[h] g) / (g * (g + δ_[h] g))) x := by
   simp only [fwdDiff,Pi.add_apply, Pi.sub_apply, Pi.mul_apply, Pi.div_apply, add_sub_cancel,
     div_sub_div _ _ hx' hx, div_eq_div_iff (mul_ne_zero hx' hx) (mul_ne_zero hx hx')]
