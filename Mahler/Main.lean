@@ -2,9 +2,9 @@
 
 Authors: Giulio Caflisch, David Loeffler
 -/
-import Mahler.ForwardDiff
-import Mahler.ForwardDiffRatio
+import Mahler.NotInMathlib.ForwardDiff
 import Mahler.Help
+
 import Mathlib.NumberTheory.Padics.ProperSpace
 import Mathlib.Analysis.NormedSpace.FunctionSeries
 import Mathlib.Topology.Algebra.Polynomial
@@ -170,7 +170,7 @@ private theorem bojanic_12 (f : C(ℤ_[p], ℚ_[p])) {y : ℤ_[p]} (hy' : ‖f y
 
 ------------------------------------------------------------------------------------------
 
-theorem PadicInt.fwdDiff_tendsto_zero (f : C(ℤ_[p], ℚ_[p])) :
+theorem PadicInt.fwdDiff_tendsto_zero_nongeneral (f : C(ℤ_[p], ℚ_[p])) :
     Filter.Tendsto (fun k ↦ δ_[1]^[k] f 0) Filter.atTop (nhds 0) := by
   simp_rw [Padic.tendsto_atTop_norm_le_pow, sub_zero]
   obtain ⟨y, hy'⟩ := ContinuousMap.exists_norm_eq_norm_apply f

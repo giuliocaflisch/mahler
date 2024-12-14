@@ -3,16 +3,18 @@
 Authors: Giulio Caflisch, David Loeffler
 -/
 
-import Mahler.ForwardDiff
-import Mathlib.NumberTheory.Padics.ProperSpace
-
-variable {p : ℕ} [hp : Fact (Nat.Prime p)]
+import Mahler.MyMathlib.ForwardDiff
+import Mathlib.Topology.Algebra.Polynomial
+import Mathlib.RingTheory.Polynomial.Pochhammer
 
 universe u
 variable {R F : Type u} [CommRing R] [Field F] [Algebra R F] (h : R)
 
 noncomputable def fwdDiffRatio (f : R → F) : R → F :=
   fun x ↦ (fwdDiff h f x) / (algebraMap R F h)
+
+notation "Δ_["h"]" => fwdDiffRatio h
+notation "Δ" => fwdDiffRatio 1
 
 @[simp] theorem fwdDiffRatio_iter_fwdDiff (h : R) (f : R → F) (n : ℕ) :
     (fwdDiffRatio h)^[n] f = fun x ↦ ((fwdDiff h)^[n] f x) / (algebraMap R F h)^n := by
@@ -22,7 +24,32 @@ noncomputable def fwdDiffRatio (f : R → F) : R → F :=
     simp_rw [Function.iterate_succ_apply']
     simp_rw [hn, fwdDiffRatio, fwdDiff, pow_succ, sub_div, div_div]
 
-notation "Δ_["h"]" => fwdDiffRatio h
+/-
+theorem fwdDiff_descPochhammer (k : ℕ) : δ_[1] (fun x : R ↦ (descPochhammer R k).eval x) = fun x : R ↦ k • (descPochhammer R (k - 1)).eval x := by
+  induction' k with k hk
+  · simp_rw [descPochhammer_zero, Polynomial.eval_one, fwdDiff_const, zero_smul]
+  · ext x
+    simp_rw [descPochhammer_succ_left, Polynomial.eval_mul, Polynomial.eval_comp,
+      Polynomial.eval_sub, Polynomial.eval_one, Polynomial.eval_X, add_tsub_cancel_right]
+    simp_rw [← Pi.mul_def, ← smul_eq_mul, fwdDiff_smul]
+    simp_rw [smul_eq_mul, Pi.add_apply, Pi.mul_apply]
+    simp_rw [fwdDiff_id', one_mul]
+    calc
+      _ = Polynomial.eval (x - 1) (descPochhammer R k) + x * δ_[1] ((fun i ↦ Polynomial.eval i (descPochhammer R k)) ∘ (fun i ↦ i - 1)) x := by
+        sorry
+      _ = Polynomial.eval (x - 1) (descPochhammer R k) + x * (δ_[1] (fun i ↦ Polynomial.eval i (descPochhammer R k)) ∘ (fun i ↦ i - 1)) x := by
+        sorry
+      _ = Polynomial.eval (x - 1) (descPochhammer R k) + x * δ_[1] (fun i ↦ Polynomial.eval i (descPochhammer R k)) (x - 1) := by
+        rw [Function.comp_apply]
+    simp_rw [hk]
+
+    /-
+    rw [fwdDiff, add_sub_right_comm, add_comm]
+    -/
+    --simp only [add_sub_cancel_right]
+-/
+
+
 
 /-
 universe u
