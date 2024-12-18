@@ -68,32 +68,48 @@ noncomputable def p := PMF.uniformOfFintype Card
 
 noncomputable def P := p.toMeasure
 
+noncomputable instance : MeasureSpace Card where
+  __ := (show MeasurableSpace Card from inferInstance)
+  volume := P
+
 def deck : Finset Card := {x : Card | True}
 def deck_red : Finset Card := {x : Card | x.color = Color.red}
 
+instance deck_red.instMeasurableSet : MeasurableSet (deck_red : Set Card) := trivial
 theorem deck_red.has26Instances : deck_red.card = 26 := rfl
 
 noncomputable def indicator_card_isred (c : Card) := (deck_red : Set Card).indicator (fun _ ↦ (1 : ℝ)) c
 
-example : ∫ c, indicator_card_isred c ∂P = 1 / 2 := by
-  rw [P, p]
-  rw [PMF.integral_eq_sum]
-  simp_rw [PMF.uniformOfFintype_apply]
-  simp_rw [smul_eq_mul]
-  simp_rw [ENNReal.toReal_inv, ENNReal.toReal_nat, one_div]
-  simp_rw [mul_comm]
-  simp_rw [← Finset.sum_mul]
-  simp_rw [Card.has52Instances]
-  rw [← eq_div_iff]
-  rw [div_inv_eq_mul]
-  rw [inv_mul_eq_div]
+theorem expectation_of_isred : P[indicator_card_isred] = 1 / 2 := by
+  rw [P, p,]
+  simp_rw [PMF.integral_eq_sum, PMF.uniformOfFintype_apply, smul_eq_mul, ENNReal.toReal_inv,
+    ENNReal.toReal_nat, one_div, mul_comm, ← Finset.sum_mul, Card.has52Instances]
+  rw [← eq_div_iff, div_inv_eq_mul, inv_mul_eq_div]
   · simp_rw [indicator_card_isred]
     rw [Finset.sum_indicator_eq_sum_inter]
     simp_rw [Finset.univ_inter, Finset.sum_const, nsmul_eq_mul, mul_one]
-    rw [deck_red.has26Instances]
-    rw [eq_div_iff]
+    rw [deck_red.has26Instances, eq_div_iff]
     · rw [← Nat.cast_two, ← Nat.cast_mul]
     · simp_rw [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true]
   · simp_rw [Nat.cast_ofNat, ne_eq, inv_eq_zero, OfNat.ofNat_ne_zero, not_false_eq_true]
+
+example : 𝔼[indicator_card_isred] = 1/2 := expectation_of_isred
+
+example : P deck_red = 1/2 := by
+  rw [← Nat.cast_one, ← Nat.cast_two]
+  rw [P, p, PMF.toMeasure_uniformOfFintype_apply]
+  simp_rw [Finset.coe_sort_coe, Fintype.card_coe]
+  rw [deck_red.has26Instances, Card.has52Instances]
+  simp_rw [← ENNReal.coe_natCast]
+  repeat rw [← ENNReal.coe_div]
+  have stupid : ((26 : ℕ) : NNReal) / ((52 : ℕ) : NNReal) = ((1 : ℕ) : NNReal) / ((2 : ℕ) : NNReal) := by
+    rw [div_eq_div_iff]
+    · repeat rw [← Nat.cast_mul]
+    · simp_rw [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true]
+    · simp_rw [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true]
+  simp_rw [stupid]
+  · simp_rw [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true]
+  · simp_rw [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true]
+  · exact deck_red.instMeasurableSet
 
 -----------------------------------------------------------------------------
