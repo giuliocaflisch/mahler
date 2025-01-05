@@ -22,7 +22,7 @@ notation "δ_["h"]" => fwdDiff h
 @[simp] theorem fwdDiff_add (f g : M → G) :
     δ_[h] (f + g) = δ_[h] f + δ_[h] g := by
   ext x
-  simp_rw [Pi.add_apply, fwdDiff, Pi.add_apply]
+  simp only [fwdDiff, Pi.add_apply]
   abel
 
 @[simp] theorem fwdDiff_const (k : G) :
