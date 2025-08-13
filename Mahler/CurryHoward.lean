@@ -5,8 +5,6 @@ import Mathlib
 
 -- • Propositions as Types
 
-def x : ℕ := 1
-
 def P : Prop := 0 = 0 + 0
 def p : P := rfl
 
